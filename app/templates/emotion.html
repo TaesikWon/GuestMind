@@ -1,0 +1,91 @@
+<!-- app/templates/emotion.html -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>SoulStay 감정 분석</title>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 2rem;
+        }
+
+        h1 {
+            color: #4a6fa5;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 600px;
+            margin-top: 1rem;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            font-size: 1rem;
+            padding: 0.8rem;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            resize: none;
+        }
+
+        button {
+            margin-top: 1rem;
+            padding: 0.6rem 1.2rem;
+            font-size: 1rem;
+            background-color: #4a6fa5;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #3c5e8a;
+        }
+
+        .result-box {
+            margin-top: 2rem;
+            background-color: #fff;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .result-label {
+            font-weight: bold;
+            color: #4a6fa5;
+        }
+    </style>
+</head>
+<body>
+    <h1>🏨 SoulStay 감정 분석</h1>
+    <form method="post" action="/emotion/analyze">
+        <textarea name="text" placeholder="고객의 피드백을 입력하세요.">{{ text or '' }}</textarea>
+        <button type="submit">분석하기</button>
+    </form>
+
+    {% if result %}
+    <div class="result-box">
+        <p class="result-label">감정 결과</p>
+        <p><strong>{{ result.emotion }}</strong></p>
+        {% if result.reason %}
+        <p class="result-label">이유</p>
+        <p>{{ result.reason }}</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</body>
+</html>

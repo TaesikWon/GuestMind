@@ -6,7 +6,7 @@ from app.services.user_service import create_user, authenticate_user
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
-# ✅ 입력 데이터 모델
+# 입력 데이터 모델
 class UserCreate(BaseModel):
     username: str
     password: str
@@ -18,7 +18,6 @@ def signup(request: UserCreate, db: Session = Depends(get_db)):
     if user is None:
         raise HTTPException(status_code=400, detail="Username already exists")
     return {"message": "User created successfully", "username": user.username}
-
 
 # 로그인
 @router.post("/login")

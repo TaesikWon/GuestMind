@@ -4,3 +4,5 @@ sqlalchemy
 pydantic-settings
 bcrypt
 python-multipart
+openai>=1.0.0
+jinja2
