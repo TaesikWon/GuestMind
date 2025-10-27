@@ -1,98 +1,63 @@
-# =============================
-# 🧠 SoulStay Project .gitignore
-# =============================
-
-# ▶ Python 관련
+# ============================
+# 🧠 Python & FastAPI 기본
+# ============================
 __pycache__/
 *.py[cod]
 *.pyo
-*.pyd
-*.pdb
-*.egg
-*.egg-info/
-dist/
-build/
-*.spec
-*.manifest
-*.wheel
 
-# ▶ 가상환경
+# ============================
+# 🔒 Virtual environments
+# ============================
 venv/
-env/
-ENV/
 .venv/
 
-# ▶ IDE / 에디터 설정 파일
+# ============================
+# 🔐 환경 변수 및 비밀정보
+# ============================
+.env
+.env.*
+!.env.example   # 예시 파일만 허용 (보안 OK)
+
+# ============================
+# 🧱 데이터베이스
+# ============================
+*.db
+*.sqlite3
+*.pid
+
+# ============================
+# 📦 캐시 / 빌드 아티팩트
+# ============================
+.pytest_cache/
+*.egg-info/
+__pypackages__/
+dist/
+build/
+
+# ============================
+# 🧪 테스트 / 로그
+# ============================
+*.log
+*.coverage
+coverage.xml
+
+# ============================
+# 🧰 IDE / 에디터 설정
+# ============================
 .vscode/
 .idea/
 *.swp
 
-# ▶ 환경 변수 / 비밀 키 파일
-.env
-.env.*
-.env.local
-.env.backup
-.env.development
-.env.production
-
-# ▶ 데이터베이스 / 캐시
-*.db
-*.sqlite3
-# ✅ ChromaDB 로컬 저장소
-app/chroma_db/
-chroma_db/
-# ✅ 추가 캐시 폴더
-__cache__/
-tmp/
-*.bak
-
-# ▶ 로그 및 리포트
-*.log
-logs/
-*.tmp
-*.pid
-*.coverage
-.coverage.*
-pytest_cache/
-.tox/
-htmlcov/
-coverage.xml
-
-# ▶ FastAPI / Uvicorn 관련
-*.pid
-*.bak
-*.old
-uvicorn.log
-
-# ▶ Docker / 배포 관련
-Dockerfile
-docker-compose.yml
+# ============================
+# 🐳 Docker
+# ============================
 *.tar
-*.img
+*.pid
 *.lock
-*.sig
+docker-compose.override.yml
 
-# ▶ 테스트 / Jupyter
-.ipynb_checkpoints/
-test-results.xml
-nosetests.xml
-
-# ▶ Node / 프론트엔드 관련 (Bootstrap, npm)
-node_modules/
-package-lock.json
-npm-debug.log
-
-# ▶ OS 관련 (Mac, Windows)
+# ============================
+# 🧠 OS 관련
+# ============================
 .DS_Store
-ehthumbs.db
-Icon?
-desktop.ini
-.Spotlight-V100
-.Trashes
-*.icloud
-
-# ▶ 기타 (백업, 임시 파일)
-*.bak
-*.orig
-*.old
-*.tmp
+Thumbs.db

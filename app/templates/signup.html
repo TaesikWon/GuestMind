@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}회원가입 - SoulStay{% endblock %}
+
+{% block content %}
+<div class="auth-section">
+  <h2 class="fw-bold mb-4 text-teal">✨ 회원가입</h2>
+  
+  <p class="text-muted mb-4">SoulStay에 오신 것을 환영합니다!</p>
+
+  <!-- 회원가입 폼 -->
+  <form method="post" action="/auth/signup" id="signupForm">
+    <div class="mb-3">
+      <label for="username" class="form-label fw-bold">사용자명</label>
+      <input
+        type="text"
+        id="username"
+        name="username"
+        class="form-control"
+        placeholder="사용자명을 입력하세요"
+        required
+        minlength="3"
+        maxlength="20">
+      <small class="text-muted">3-20자</small>
+    </div>
+
+    <div class="mb-3">
+      <label for="password" class="form-label fw-bold">비밀번호</label>
+      <input
+        type="password"
+        id="password"
+        name="password"
+        class="form-control"
+        placeholder="비밀번호를 입력하세요"
+        required
+        minlength="4"
+        maxlength="50">
+      <small class="text-muted">최소 4자</small>
+    </div>
+
+    <div class="mb-3">
+      <label for="password_confirm" class="form-label fw-bold">비밀번호 확인</label>
+      <input
+        type="password"
+        id="password_confirm"
+        name="password_confirm"
+        class="form-control"
+        placeholder="비밀번호를 다시 입력하세요"
+        required>
+    </div>
+
+    <!-- 에러 메시지 -->
+    {% if error %}
+    <div class="alert alert-danger" role="alert">
+      {{ error }}
+    </div>
+    {% endif %}
+
+    <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
+      회원가입
+    </button>
+  </form>
+
+  <!-- 로그인 링크 -->
+  <div class="text-center">
+    <p class="text-muted">이미 계정이 있으신가요? <a href="/auth/login-page" class="text-primary">로그인</a></p>
+  </div>
+</div>
+
+<!-- 비밀번호 확인 스크립트 -->
+<script>
+document.getElementById('signupForm').addEventListener('submit', function(e) {
+  const password = document.getElementById('password').value;
+  const confirm = document.getElementById('password_confirm').value;
+  
+  if (password !== confirm) {
+    e.preventDefault();
+    alert('비밀번호가 일치하지 않습니다.');
+    return false;
+  }
+});
+</script>
+{% endblock %}

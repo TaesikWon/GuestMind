@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}로그인 - SoulStay{% endblock %}
+
+{% block content %}
+<div class="auth-section">
+  <h2 class="fw-bold mb-4 text-teal">🔑 로그인</h2>
+  
+  <p class="text-muted mb-4">SoulStay에 다시 오신 것을 환영합니다!</p>
+
+  <!-- 로그인 폼 -->
+  <form method="post" action="/auth/login" id="loginForm">
+    <div class="mb-3">
+      <label for="username" class="form-label fw-bold">사용자명</label>
+      <input
+        type="text"
+        id="username"
+        name="username"
+        class="form-control"
+        placeholder="사용자명을 입력하세요"
+        required>
+    </div>
+
+    <div class="mb-3">
+      <label for="password" class="form-label fw-bold">비밀번호</label>
+      <input
+        type="password"
+        id="password"
+        name="password"
+        class="form-control"
+        placeholder="비밀번호를 입력하세요"
+        required>
+    </div>
+
+    <!-- 에러 메시지 -->
+    {% if error %}
+    <div class="alert alert-danger" role="alert">
+      {{ error }}
+    </div>
+    {% endif %}
+
+    <!-- 성공 메시지 -->
+    {% if message %}
+    <div class="alert alert-success" role="alert">
+      {{ message }}
+    </div>
+    {% endif %}
+
+    <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
+      로그인
+    </button>
+  </form>
+
+  <!-- 회원가입 링크 -->
+  <div class="text-center">
+    <p class="text-muted">계정이 없으신가요? <a href="/auth/signup-page" class="text-primary">회원가입</a></p>
+  </div>
+</div>
+
+<!-- 로그인 성공 시 토큰 저장 -->
+<script>
+// 로그인 성공 시 처리 (필요시)
+</script>
+{% endblock %}

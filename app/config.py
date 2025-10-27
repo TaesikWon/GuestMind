@@ -1,20 +1,13 @@
-from pydantic_settings import BaseSettings
-from pydantic import ConfigDict
+import os
+from dotenv import load_dotenv
 
+load_dotenv()  # .env 파일 읽기
 
-class Settings(BaseSettings):
-    OPENAI_API_KEY: str
-    DATABASE_URL: str = "sqlite:///./soulstay.db"
-    SECRET_KEY: str
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
-
-    # ✅ 추가: .env에 존재하는 항목 등록
-    CHROMA_DB_PATH: str = "app/chroma_db"
-    APP_ENV: str = "development"
-
-    # ✅ Pydantic v2 방식 (class Config 대신)
-    model_config = ConfigDict(env_file=".env")
-
-
-settings = Settings()
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = os.getenv("DB_PORT")
+DB_NAME = os.getenv("DB_NAME")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
+REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", 7))
+DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
