@@ -3,23 +3,37 @@
 
 {% block content %}
 <div class="emotion-section">
-  <h2>고객 감정 분석</h2>
 
-  <form method="post" action="/emotion/analyze" class="emotion-form">
-    <textarea
-      name="text"
-      placeholder="고객님의 의견을 알려주세요."
-      required>{{ text or '' }}</textarea>
-    <button type="submit">입력</button>
+  <h2 class="fw-bold mb-4 text-teal">고객 감정 분석</h2>
+
+  <!-- 감정 분석 폼 -->
+  <form method="post" action="/emotion/analyze" class="mb-4">
+    <div class="mb-3">
+      <textarea
+        name="text"
+        class="form-control"
+        rows="4"
+        placeholder="고객님의 의견을 입력해주세요. 예) 객실이 매우 깨끗하고 조용했어요."
+        required>{{ text or '' }}</textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary px-4">
+      감정 분석 실행
+    </button>
   </form>
 
+  <!-- 결과 영역 -->
   {% if result %}
-  <div class="result-box">
-    <p><strong>분석 결과:</strong> {{ result.emotion }}</p>
-    {% if result.reason %}
-    <p><strong>이유:</strong> {{ result.reason }}</p>
-    {% endif %}
+  <div class="card card-custom mt-4">
+    <div class="card-body text-start">
+      <h5 class="card-title fw-bold text-teal">분석 결과</h5>
+      <p class="mb-1"><strong>감정:</strong> {{ result.emotion }}</p>
+      {% if result.reason %}
+      <p class="mb-0"><strong>이유:</strong> {{ result.reason }}</p>
+      {% endif %}
+    </div>
   </div>
   {% endif %}
+
 </div>
 {% endblock %}

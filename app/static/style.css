@@ -1,80 +1,200 @@
-/* 색상 테마 */
+/* 🌿 SoulStay 메인 스타일 (Antique Ver.)
+   디자인 컨셉: 고급 호텔 감성의 브라운 + 골드 톤 */
+
+/* 🎨 색상 팔레트 */
 :root {
-  --main-color: #1ca7a0;   /* 청록 */
-  --main-dark: #148c86;
-  --bg-light: #e6f8f7;
-  --text-dark: #043b3b;
+  --primary-color: #8B6B4E;   /* 메인 브라운 골드 */
+  --primary-dark: #6E523A;    /* 어두운 버전 */
+  --accent-color: #D6B98C;    /* 밝은 골드 */
+  --light-bg: #F9F6F1;        /* 아이보리 배경 */
+  --soft-gray: #E8E0D6;       /* 부드러운 테두리 */
+  --text-color: #3B2F2F;      /* 진한 브라운 텍스트 */
 }
 
-/* 기본 페이지 스타일 */
+/* ✅ 기본 설정 */
 body {
-  background-color: var(--bg-light);
-  color: var(--text-dark);
-  font-family: "Noto Sans KR", sans-serif;
+  font-family: 'Noto Sans KR', 'Pretendard', sans-serif;
+  background-color: var(--light-bg);
+  color: var(--text-color);
+  margin: 0;
+  padding: 0;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
-/* 헤더 */
+/* ✅ 헤더 영역 (방법① + 방법② 적용) */
 .header-gradient {
-  background: linear-gradient(90deg, var(--main-color), #3ac4bc);
+  background: linear-gradient(135deg, #8B6B4E, #6E523A);
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  border-bottom: 3px solid var(--accent-color); /* 구분선 */
 }
 
-/* 네비게이션 바 */
-.navbar-custom {
-  background-color: var(--main-color);
-}
-.navbar-custom .nav-link {
-  color: white;
-}
-.navbar-custom .nav-link:hover {
-  color: #dffdfa;
+/* ✅ 네비게이션 바 (헤더보다 살짝 밝게) */
+.navbar {
+  background-color: #A47C5B !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
-/* 메인 중앙 정렬 */
+.navbar-brand {
+  font-weight: 700;
+  color: #fff !important;
+  letter-spacing: 0.5px;
+}
+
+.navbar-nav .nav-link {
+  color: #F9F6F1 !important;
+  font-weight: 500;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #fff !important;
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+/* ✅ 메인 콘텐츠 */
 .main-center {
   flex: 1;
-  min-height: 70vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem 1rem;
 }
+
 .content-box {
-  max-width: 600px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 3rem 2.5rem;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  max-width: 750px;
   width: 100%;
+  text-align: center;
+  transition: all 0.3s ease;
 }
 
-/* 푸터 */
-.footer-custom {
-  background-color: var(--main-color);
+.content-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
-/* 버튼 스타일 */
+/* ✅ 버튼 */
 .btn-primary {
-  background-color: var(--main-color);
-  border-color: var(--main-color);
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  font-weight: 600;
+  transition: all 0.25s ease;
 }
+
 .btn-primary:hover {
-  background-color: var(--main-dark);
-  border-color: var(--main-dark);
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+  transform: scale(1.03);
 }
 
-/* 입력 필드 */
-input, textarea {
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  padding: 8px 10px;
+.btn-outline-primary {
+  color: var(--primary-dark);
+  border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--primary-color);
+  color: #fff;
+}
+
+/* ✅ 폼 */
+.form-control {
+  border-radius: 8px;
+  border: 1px solid var(--soft-gray);
+  transition: all 0.2s ease;
+}
+
+.form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.25rem rgba(139, 107, 78, 0.25);
+}
+
+/* 🎯 섹션 제목 정렬 및 라인 강조 */
+.emotion-section h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin-bottom: 1.5rem;
+  position: relative;
+  display: inline-block;
+}
+
+.emotion-section h2::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -6px;
   width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+  border-radius: 2px;
 }
 
-/* 그림자 효과 */
-.shadow-sm {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+/* 💬 텍스트 영역 개선 */
+textarea.form-control {
+  resize: none;
+  min-height: 120px;
+  padding: 1rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  border-radius: 10px;
+  border: 1px solid var(--soft-gray);
+  background-color: #fff;
+  transition: all 0.2s ease;
 }
 
-/* 반응형 정렬 */
+textarea.form-control::placeholder {
+  color: #9f9184;
+}
+
+textarea.form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.25rem rgba(139, 107, 78, 0.25);
+}
+
+/* ✅ 카드형 레이아웃 */
+.card-custom {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-custom:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* ✅ 푸터 */
+footer {
+  background-color: var(--primary-dark);
+  color: #fff;
+  text-align: center;
+  padding: 1rem 0;
+  margin-top: auto;
+  font-size: 0.9rem;
+  letter-spacing: 0.3px;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* ✅ 반응형 조정 */
 @media (max-width: 768px) {
   .content-box {
-    margin: 0 1rem;
+    padding: 2rem 1.5rem;
+  }
+
+  .navbar-brand {
+    font-size: 1.1rem;
+  }
+
+  header h1 {
+    font-size: 1.6rem;
   }
 }
