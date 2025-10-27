@@ -1,3 +1,4 @@
+# app/database.py
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from app.config import settings
@@ -10,5 +11,9 @@ def get_db():
     db = SessionLocal()
     try:
         yield db
+        db.commit()  # 트랜잭션 정상 완료 시 커밋
+    except Exception:
+        db.rollback()  # 예외 발생 시 되돌림
+        raise           # 예외를 상위로 다시 전달
     finally:
-        db.close()
+        db.close()      # 세션 종료 (항상 실행)

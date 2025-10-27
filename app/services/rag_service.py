@@ -1,21 +1,52 @@
-from sentence_transformers import SentenceTransformer
-import faiss
-import numpy as np
+# services/rag_service.py
+import chromadb
+from openai import OpenAI
+from app.config import settings  # ✅ 환경 변수 불러오기
 
-# 1. 임베딩 모델 로드
-embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+# ✅ OpenAI 클라이언트 (API 키 설정)
+client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
-# 2. FAISS 벡터 DB 초기화
-dimension = 384  # 모델 임베딩 차원
-index = faiss.IndexFlatL2(dimension)
+# ✅ ChromaDB 영속 경로 (.env에서 불러옴)
+chroma_client = chromadb.PersistentClient(path=settings.CHROMA_DB_PATH)
+collection = chroma_client.get_or_create_collection("feedback_embeddings")
 
-# 3. 벡터 추가 함수
-def add_to_vector_db(texts: list[str]):
-    vectors = embedding_model.encode(texts)
-    index.add(np.array(vectors, dtype="float32"))
+def add_feedback_to_rag(feedback_id, feedback_text):
+    """피드백 텍스트를 임베딩 후 ChromaDB에 저장"""
+    try:
+        embedding = client.embeddings.create(
+            model="text-embedding-3-small",
+            input=feedback_text
+        ).data[0].embedding
 
-# 4. 유사 문장 검색
-def search_similar(query: str, top_k: int = 3):
-    query_vec = embedding_model.encode([query])
-    distances, indices = index.search(np.array(query_vec, dtype="float32"), top_k)
-    return indices[0], distances[0]
+        collection.add(
+            ids=[str(feedback_id)],
+            embeddings=[embedding],
+            documents=[feedback_text]
+        )
+        return True
+    except Exception as e:
+        print(f"[RAG] ❌ Add failed: {e}")
+        return False
+
+
+def search_similar_feedback(query_text, top_k=3):
+    """입력 텍스트와 유사한 피드백 검색"""
+    try:
+        query_emb = client.embeddings.create(
+            model="text-embedding-3-small",
+            input=query_text
+        ).data[0].embedding
+
+        results = collection.query(
+            query_embeddings=[query_emb],
+            n_results=top_k
+        )
+
+        hits = [
+            {"text": doc, "distance": dist}
+            for doc, dist in zip(results["documents"][0], results["distances"][0])
+        ]
+        return hits
+    except Exception as e:
+        print(f"[RAG] ❌ Search failed: {e}")
+        return []

@@ -12,6 +12,9 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+*.spec
+*.manifest
+*.wheel
 
 # ▶ 가상환경
 venv/
@@ -27,40 +30,69 @@ ENV/
 # ▶ 환경 변수 / 비밀 키 파일
 .env
 .env.*
+.env.local
+.env.backup
+.env.development
+.env.production
 
-# ▶ 데이터베이스 (로컬 SQLite)
+# ▶ 데이터베이스 / 캐시
 *.db
 *.sqlite3
+# ✅ ChromaDB 로컬 저장소
+app/chroma_db/
+chroma_db/
+# ✅ 추가 캐시 폴더
+__cache__/
+tmp/
+*.bak
 
-# ▶ 로그 및 캐시
+# ▶ 로그 및 리포트
 *.log
-*.pot
-*.pyc
-.cache/
+logs/
 *.tmp
-.DS_Store
-Thumbs.db
-
-# ▶ FastAPI / Uvicorn 관련 임시 파일
 *.pid
 *.coverage
+.coverage.*
+pytest_cache/
+.tox/
 htmlcov/
+coverage.xml
 
-# ▶ 배포 관련
+# ▶ FastAPI / Uvicorn 관련
+*.pid
 *.bak
 *.old
+uvicorn.log
+
+# ▶ Docker / 배포 관련
+Dockerfile
+docker-compose.yml
+*.tar
+*.img
+*.lock
+*.sig
 
 # ▶ 테스트 / Jupyter
 .ipynb_checkpoints/
-pytest_cache/
-.coverage
+test-results.xml
+nosetests.xml
+
+# ▶ Node / 프론트엔드 관련 (Bootstrap, npm)
+node_modules/
+package-lock.json
+npm-debug.log
 
 # ▶ OS 관련 (Mac, Windows)
 .DS_Store
 ehthumbs.db
 Icon?
 desktop.ini
+.Spotlight-V100
+.Trashes
+*.icloud
 
-# 환경 변수 / 비밀 키 파일
-.env
-.env.*
+# ▶ 기타 (백업, 임시 파일)
+*.bak
+*.orig
+*.old
+*.tmp

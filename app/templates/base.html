@@ -1,88 +1,59 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block title %}SoulStay{% endblock %}</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SoulStay</title>
 
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f8f9fa;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-    header {
-      background-color: #2b3a67;
-      color: white;
-      padding: 1rem 2rem;
-      text-align: center;
-      font-size: 1.5rem;
-      letter-spacing: 1px;
-    }
-    main {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 2rem;
-    }
-    .container {
-      background-color: white;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      width: 100%;
-      max-width: 600px;
-    }
-    footer {
-      text-align: center;
-      padding: 1rem;
-      font-size: 0.9rem;
-      color: #888;
-      border-top: 1px solid #ddd;
-      background: #f1f3f5;
-    }
-    button {
-      background-color: #2b3a67;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 0.5rem 1.2rem;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    button:hover {
-      background-color: #1f2a50;
-    }
-    textarea {
-      width: 100%;
-      padding: 0.8rem;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      resize: none;
-    }
-  </style>
+  <!-- Bootstrap -->
+  <link 
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" 
+    rel="stylesheet">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
 </head>
-
 <body>
-  <header>
-    🏨 SoulStay - 고객 감정 분석 서비스
+
+  <!-- ✅ Header -->
+  <header class="py-4 text-center text-white header-gradient">
+    <h1 class="fw-bold mb-1">SoulStay</h1>
+    <p class="lead mb-0">고객 감정 분석 기반 호텔 경험 관리 서비스</p>
   </header>
 
-  <main>
+  <!-- ✅ Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-custom">
     <div class="container">
-      {% block content %}
-      
-      {% endblock %}
+      <a class="navbar-brand fw-bold" href="/">홈</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mx-auto">
+          <li class="nav-item"><a class="nav-link" href="/emotion">감정 분석</a></li>
+          <li class="nav-item"><a class="nav-link" href="/users">사용자 목록</a></li>
+          <li class="nav-item"><a class="nav-link" href="/auth/login">로그인</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ✅ Main -->
+  <main class="main-center d-flex justify-content-center align-items-center py-5">
+    <div class="content-box text-center shadow-sm p-4 bg-white rounded-3">
+      {% block content %}{% endblock %}
     </div>
   </main>
 
-  <footer>
-    © 2025 SoulStay | 감정 기반 고객 경험 플랫폼
+  <!-- ✅ Footer -->
+  <footer class="text-center py-3 text-white footer-custom">
+    <small>© 2025 SoulStay — All rights reserved.</small>
   </footer>
+
+  <!-- Bootstrap JS -->
+  <script 
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+  </script>
 </body>
 </html>

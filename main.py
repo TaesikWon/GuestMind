@@ -1,26 +1,27 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import RedirectResponse
+from app.routes import auth, emotion, rag, user as user_routes
 from app.database import Base, engine
-from app.models import user, emotion_log
-from app.routes import auth, emotion, user as user_routes
-import json
+from app.models import user as user_model, emotion_log
 
-# FastAPI 앱 생성 (중복 제거)
-app = FastAPI(title="SoulStay")
+app = FastAPI()
 
-# 템플릿 설정
+# ✅ 정적 파일 경로 등록
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+# ✅ 템플릿 폴더 지정
 templates = Jinja2Templates(directory="app/templates")
 
-# DB 테이블 생성
-Base.metadata.create_all(bind=engine)
-
-# 라우터 등록
+# ✅ 라우터 등록
 app.include_router(auth.router)
 app.include_router(emotion.router)
 app.include_router(user_routes.router)
+app.include_router(rag.router)
 
-# 루트 엔드포인트
 @app.get("/")
 def root():
-    return RedirectResponse(url="/emotion")
+    return {"message": "SoulStay API running"}
+
+# ✅ 테이블 자동 생성
+Base.metadata.create_all(bind=engine)

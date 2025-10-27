@@ -1,7 +1,7 @@
+# app/models/user.py
 from sqlalchemy.orm import relationship
 from app.database import Base
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, func
-created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
 class User(Base):
@@ -10,8 +10,12 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(50), unique=True, index=True)
     hashed_password = Column(String(255))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+    # 관계 설정
     logs = relationship("EmotionLog", back_populates="user")
+    profile = relationship("UserProfile", back_populates="user", uselist=False)
+    feedbacks = relationship("Feedback", back_populates="user")
 
 
 class UserProfile(Base):
@@ -25,7 +29,6 @@ class UserProfile(Base):
     joined_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", back_populates="profile")
-
 
 
 class Feedback(Base):
