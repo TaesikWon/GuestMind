@@ -1,0 +1,80 @@
+/* 색상 테마 */
+:root {
+  --main-color: #1ca7a0;   /* 청록 */
+  --main-dark: #148c86;
+  --bg-light: #e6f8f7;
+  --text-dark: #043b3b;
+}
+
+/* 기본 페이지 스타일 */
+body {
+  background-color: var(--bg-light);
+  color: var(--text-dark);
+  font-family: "Noto Sans KR", sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 헤더 */
+.header-gradient {
+  background: linear-gradient(90deg, var(--main-color), #3ac4bc);
+}
+
+/* 네비게이션 바 */
+.navbar-custom {
+  background-color: var(--main-color);
+}
+.navbar-custom .nav-link {
+  color: white;
+}
+.navbar-custom .nav-link:hover {
+  color: #dffdfa;
+}
+
+/* 메인 중앙 정렬 */
+.main-center {
+  flex: 1;
+  min-height: 70vh;
+}
+.content-box {
+  max-width: 600px;
+  width: 100%;
+}
+
+/* 푸터 */
+.footer-custom {
+  background-color: var(--main-color);
+}
+
+/* 버튼 스타일 */
+.btn-primary {
+  background-color: var(--main-color);
+  border-color: var(--main-color);
+}
+.btn-primary:hover {
+  background-color: var(--main-dark);
+  border-color: var(--main-dark);
+}
+
+/* 입력 필드 */
+input, textarea {
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  padding: 8px 10px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* 그림자 효과 */
+.shadow-sm {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* 반응형 정렬 */
+@media (max-width: 768px) {
+  .content-box {
+    margin: 0 1rem;
+  }
+}
