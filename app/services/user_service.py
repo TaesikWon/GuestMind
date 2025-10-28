@@ -1,43 +1,72 @@
+# app/services/user_service.py
 from sqlalchemy.orm import Session
-from sqlalchemy import select
+from fastapi import HTTPException, status
 from app.models.user import User
-from typing import Optional
-import bcrypt
+from passlib.context import CryptContext
+from app.utils.logger import logger  # ✅ 중앙 로거 사용
 
-def create_user(db: Session, username: str, password: str) -> Optional[User]:
-    # 이미 존재하는 유저 확인
-    existing_user = db.query(User).filter(User.username == username).first()
-    if existing_user:
-        return None
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-    # 비밀번호 해싱
-    hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-    user = User(username=username, hashed_password=hashed_pw.decode('utf-8'))
+# ✅ 비밀번호 해싱
+def hash_password(password: str) -> str:
+    return pwd_context.hash(password)
 
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-    return user
+# ✅ 비밀번호 검증
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
 
-def authenticate_user(db: Session, username: str, password: str) -> Optional[User]:
-    user = db.query(User).filter(User.username == username).first()
-    if not user:
-        return None
+# ✅ 회원가입
+def create_user(db: Session, username: str, password: str):
+    if not username or not password:
+        logger.warning("USER: Signup failed — Missing username or password")
+        raise HTTPException(status_code=400, detail="Username and password required")
 
-    if not bcrypt.checkpw(password.encode('utf-8'), user.hashed_password.encode('utf-8')):
-        return None
+    if len(username) < 3 or len(password) < 6:
+        logger.warning(f"USER: Signup failed — username/password too short ({username})")
+        raise HTTPException(status_code=400, detail="Username ≥3, password ≥6 chars")
 
-    return user
+    try:
+        existing_user = db.query(User).filter(User.username == username).first()
+        if existing_user:
+            logger.warning(f"USER: Signup failed — username '{username}' already exists")
+            raise HTTPException(status_code=400, detail="Username already exists")
 
-def get_user_by_username(db: Session, username: str) -> Optional[User]:
-    """
-    사용자명으로 사용자 조회 (auth.py에서 사용)
-    
-    Args:
-        db: DB 세션
-        username: 사용자명
-    
-    Returns:
-        User 객체 또는 None
-    """
-    return db.query(User).filter(User.username == username).first()
+        new_user = User(username=username, password_hash=hash_password(password))
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+        logger.info(f"USER: New user created — {username}")
+        return new_user
+
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as e:
+        db.rollback()
+        logger.exception(f"USER: Database error while creating '{username}' — {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+# ✅ 로그인 시 사용자 인증
+def authenticate_user(db: Session, username: str, password: str):
+    if not username or not password:
+        logger.warning("USER: Login failed — Missing username or password")
+        raise HTTPException(status_code=400, detail="Username and password required")
+
+    try:
+        user = db.query(User).filter(User.username == username).first()
+        if not user:
+            logger.warning(f"USER: Login failed — user '{username}' not found")
+            raise HTTPException(status_code=401, detail="Invalid username or password")
+
+        if not verify_password(password, user.password_hash):
+            logger.warning(f"USER: Login failed — wrong password for '{username}'")
+            raise HTTPException(status_code=401, detail="Invalid username or password")
+
+        logger.info(f"USER: '{username}' authenticated successfully")
+        return user
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"USER: Unexpected login error for '{username}' — {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")

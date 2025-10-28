@@ -1,19 +1,31 @@
-# app/database.py
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from app.config import settings
+import logging
 
-engine = create_engine(settings.DATABASE_URL, connect_args={"check_same_thread": False})
+logger = logging.getLogger(__name__)
+
+# ✅ .env 파일에서 불러온 PostgreSQL URL 사용
+DATABASE_URL = settings.db_url
+
+# ✅ PostgreSQL은 connect_args 필요 없음!
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True,  # 연결 확인
+    echo=settings.APP_ENV == "development"  # 개발환경에서만 SQL 로그 출력
+)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 def get_db():
+    """DB 세션 생성 (FastAPI Dependency)"""
     db = SessionLocal()
     try:
         yield db
-        db.commit()  # 트랜잭션 정상 완료 시 커밋
-    except Exception:
-        db.rollback()  # 예외 발생 시 되돌림
-        raise           # 예외를 상위로 다시 전달
+    except Exception as e:
+        logger.error(f"❌ DB 세션 오류 발생: {e}")
+        db.rollback()  # 에러 시 롤백
+        raise
     finally:
-        db.close()      # 세션 종료 (항상 실행)
+        db.close()
