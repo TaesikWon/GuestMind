@@ -1,151 +1,217 @@
-# SoulStay 🏨
+# 🏨 SoulStay
 
-**AI로 고객의 감정을 읽다 — 호텔 경험 관리 서비스**
-
----
-
-## 📖 소개
-
-SoulStay는 호텔 고객의 피드백을 AI로 실시간 감정 분석하여 경영자가 고객 경험을 직관적으로 파악하고 개선할 수 있도록 돕는 웹 서비스입니다.
-
-### 💡 핵심 가치
-
-- 📊 **데이터 기반 의사결정**: 고객 피드백의 감정 트렌드를 한눈에 파악
-- 🔍 **인사이트 발견**: 유사 피드백 검색으로 반복되는 이슈 식별
-- ⚡ **실시간 분석**: 즉각적인 감정 분류 및 데이터베이스 저장
+**AI로 고객의 감정을 읽다 — 감정 분석 기반 호텔 경험 관리 플랫폼**
 
 ---
 
-## ✨ 주요 기능
+## 💭 프로젝트 개발 동기
+
+호텔 식음료 및 객실 업무를 1년 6개월간 하면서 수많은 고객을 만났고, 그만큼 다양한 컴플레인을 경험했습니다.
+
+매번 고객 대응을 하며 느낀 점은:
+- 고객의 감정을 정확히 파악하면 더 효과적인 대응이 가능하다
+- 고객은 감정적으로 표현하지 않고도 원하는 바를 얻을 수 있어야 한다
+- 직원들은 불필요한 스트레스 없이 본질적인 문제 해결에 집중할 수 있어야 한다
+
+**SoulStay는 이러한 경험에서 출발한 프로젝트입니다.**
+
+AI를 통해 고객 피드백의 감정을 자동으로 분석하고, 유사한 사례를 빠르게 검색하여, 호텔 운영자와 직원들이 더 효과적으로 고객을 이해하고 대응할 수 있도록 돕습니다.
+
+---
+
+## 📖 개요
+
+SoulStay는 고객 피드백(리뷰 등)을 AI로 분석해 호텔 운영자가 고객 감정을 직관적으로 파악하고 개선할 수 있도록 돕는 서비스입니다.
+
+OpenAI GPT를 활용한 감정 분석 결과를 ChromaDB 벡터 스토어로 저장하여 유사 피드백 검색, 트렌드 분석, 감정 통계 시각화에 활용할 수 있습니다.
+
+---
+
+## 💡 핵심 기능
 
 | 기능 | 설명 |
 |------|------|
-| 💬 감정 분석 | OpenAI GPT-4o-mini를 활용한 긍정/부정/중립 분류 및 근거 제공 |
-| 🧠 RAG 검색 | ChromaDB 벡터 데이터베이스 기반의 유사 피드백 검색 |
-| 👤 사용자 관리 | 회원가입/로그인 시스템 (JWT 인증 예정) |
-| 📊 데이터 로깅 | SQLite + SQLAlchemy 기반 분석 결과 영구 저장 |
-| 🎨 반응형 UI | Jinja2 + Bootstrap 5 기반 직관적 웹 인터페이스 |
+| 💬 **감정 분석** | GPT-4o-mini로 긍정/부정/중립 분류 및 이유 제공 |
+| 🧠 **RAG 검색** | ChromaDB 기반 벡터 스토어 유사 피드백 검색 |
+| 👤 **회원 시스템** | JWT 기반 로그인/회원가입 (쿠키 저장) |
+| 📚 **데이터 저장** | PostgreSQL + SQLAlchemy로 감정 로그 및 사용자 데이터 관리 |
+| 📊 **자동 요약** | APScheduler 기반 일일 감정 통계 자동 생성 |
+| 🎨 **프론트엔드** | Jinja2 + Bootstrap 기반의 반응형 UI |
+| 🧾 **로깅 시스템** | Python logging 모듈 기반 로그 기록 |
 
 ---
 
-## 🚀 빠른 시작
+## ⚙️ 기술 스택
 
-### ✅ 사전 요구사항
+| 분야 | 사용 기술 |
+|------|----------|
+| **Backend** | FastAPI, SQLAlchemy, PostgreSQL |
+| **AI / LLM** | OpenAI GPT-4o-mini, ChromaDB |
+| **Embedding** | OpenAI text-embedding-3-small |
+| **Auth** | JWT (Access + Refresh Token), python-jose |
+| **Scheduler** | APScheduler |
+| **Frontend** | Jinja2, Bootstrap, Custom CSS |
+| **Config** | python-dotenv, pydantic-settings |
+| **Logging** | Python logging 모듈 |
 
-- Python 3.8+
-- 유효한 OpenAI API Key
+---
 
-### ⚙️ 설치
+## 🚀 실행 방법
+
+### 1️⃣ 환경 구성
 ```bash
-# 저장소 클론
 git clone https://github.com/TaesikWon/SoulStay.git
 cd SoulStay
-
-# 가상환경 생성 및 활성화
-python -m venv venv
-
-# macOS / Linux
-source venv/bin/activate
-
-# Windows
-venv\Scripts\activate
-
-# 패키지 설치
+python -m venv .venv
+.venv\Scripts\activate  # Windows
+# source .venv/bin/activate  # macOS/Linux
 pip install -r requirements.txt
 ```
 
-### 🧩 환경 설정
+### 2️⃣ 환경 변수 설정
 
-프로젝트 루트에 `.env` 파일을 생성하고 다음 내용을 입력하세요:
+프로젝트 루트에 `.env` 파일 생성:
 ```env
-OPENAI_API_KEY=sk-your-api-key-here
-DATABASE_URL=sqlite:///./soulstay.db
-SECRET_KEY=your-secret-key-here
+OPENAI_API_KEY=sk-your-api-key
+DATABASE_URL=postgresql+psycopg2://postgres:yourpassword@localhost/soulstay
+CHROMA_DB_PATH=./chroma_data
+SECRET_KEY=your-secret-key
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
-CHROMA_DB_PATH=app/chroma_db
-APP_ENV=development
+REFRESH_TOKEN_EXPIRE_DAYS=7
+ENVIRONMENT=development
 ```
 
-### ▶️ 실행
+### 3️⃣ 데이터베이스 초기화
+```bash
+# PostgreSQL 데이터베이스 생성
+createdb soulstay
+
+# 테이블 자동 생성 (첫 실행 시)
+uvicorn main:app --reload
+```
+
+### 4️⃣ 서버 실행
 ```bash
 uvicorn main:app --reload
 ```
 
-브라우저에서 http://127.0.0.1:8000/emotion 으로 접속하세요.
+👉 브라우저에서: http://127.0.0.1:8000
 
 ---
 
-## 🏗️ 프로젝트 구조
+## 🗂️ 프로젝트 구조
 ```
 SoulStay/
 ├── app/
-│   ├── config.py              # 환경 설정
-│   ├── database.py            # DB 연결 관리
-│   ├── models/                # 데이터 모델
-│   ├── routes/                # API 엔드포인트
-│   ├── services/              # 비즈니스 로직
-│   ├── static/                # CSS, JS 파일
-│   ├── templates/             # HTML 템플릿
-│   └── utils/                 # 유틸리티 함수
-├── main.py                    # 애플리케이션 진입점
-├── requirements.txt
+│   ├── routes/
+│   │   ├── auth.py          # 회원가입/로그인/로그아웃
+│   │   ├── emotion.py       # 감정 분석 API
+│   │   ├── rag.py           # RAG 검색
+│   │   └── user.py          # 사용자 정보
+│   ├── services/
+│   │   ├── emotion_service.py
+│   │   ├── rag_service.py
+│   │   ├── summary_service.py
+│   │   ├── user_service.py
+│   │   └── token_service.py
+│   ├── models/
+│   │   ├── user.py
+│   │   ├── emotion_log.py
+│   │   └── daily_summary.py
+│   ├── core/
+│   │   └── auth_utils.py
+│   ├── templates/
+│   │   ├── base.html
+│   │   ├── emotion.html
+│   │   ├── login.html
+│   │   └── register.html
+│   ├── static/
+│   │   └── style.css
+│   ├── config.py
+│   ├── database.py
+│   └── vectorstore.py
+├── main.py
 ├── .env
-└── soulstay.db
+├── requirements.txt
+├── Dockerfile
+├── docker-compose.yml
+└── logs/
 ```
 
 ---
 
-## 🛠️ 기술 스택
+## 🧠 데이터베이스 구조
 
-| 영역 | 사용 기술 |
-|------|-----------|
-| **Backend** | FastAPI, SQLAlchemy, SQLite |
-| **AI / NLP** | OpenAI GPT-4o-mini, text-embedding-3-small |
-| **Vector DB** | ChromaDB |
-| **Frontend** | Jinja2, Bootstrap 5, Custom CSS |
-| **Security** | python-dotenv, JWT (예정) |
+### 📋 users 테이블
+| 컬럼 | 타입 | 제약조건 |
+|------|------|----------|
+| id | SERIAL | PK |
+| username | VARCHAR | NOT NULL, UNIQUE |
+| password_hash | VARCHAR | NOT NULL |
+| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
+| last_login | TIMESTAMP | NULL |
 
----
+### 📋 emotion_logs 테이블
+| 컬럼 | 타입 | 제약조건 |
+|------|------|----------|
+| id | SERIAL | PK |
+| user_id | INTEGER | FK (users.id) |
+| text | VARCHAR | NOT NULL |
+| emotion | VARCHAR | NOT NULL |
+| reason | VARCHAR | NULL |
+| created_at | TIMESTAMP | DEFAULT now() |
 
-## 🗓️ 로드맵
-
-### 📍 Phase 1 — 현재
-
-- [x] 기본 감정 분석 API
-- [x] ChromaDB 기반 RAG 검색
-- [x] SQLite 데이터 로깅
-- [x] 반응형 웹 UI 구축
-
-### 🔜 Phase 2 — 진행 예정
-
-- [ ] JWT 기반 인증 시스템
-- [ ] 감정 분석 대시보드 (차트 시각화)
-- [ ] 입력 검증 및 예외 처리 강화
-- [ ] API 문서 자동화 (Swagger UI)
-
-### 🚀 Phase 3 — 계획
-
-- [ ] Docker 컨테이너화
-- [ ] Render / Railway 배포
-- [ ] 실시간 알림 기능
-- [ ] 다국어 지원
+### 📋 daily_summaries 테이블
+| 컬럼 | 타입 | 제약조건 |
+|------|------|----------|
+| id | SERIAL | PK |
+| user_id | INTEGER | FK (users.id) |
+| date | DATE | NOT NULL |
+| total_feedback | INTEGER | NOT NULL |
+| positive_ratio | FLOAT | NOT NULL |
+| negative_ratio | FLOAT | NOT NULL |
+| neutral_ratio | FLOAT | NOT NULL |
+| created_at | TIMESTAMP | DEFAULT now() |
 
 ---
 
-## 👨‍💻 개발자
+## 🧾 로그 확인
+
+로그 파일은 `logs/` 디렉터리에 자동 생성됩니다.
+
+FastAPI 라우트 호출 시, 분석 결과와 DB 저장 상태가 기록됩니다.
+
+---
+
+## 🧭 개발 로드맵
+
+### ✅ 현재 단계
+- [x] Auth (JWT 쿠키 기반) 완성
+- [x] RAG + GPT 감정 분석 통합
+- [x] PostgreSQL 기반 영구 저장
+- [x] APScheduler 자동 요약
+- [x] UI 기본 구조 완성
+
+### 🔜 다음 단계
+- [ ] Emotion 히스토리 페이지 추가
+- [ ] RAG 검색 품질 향상
+- [ ] Dashboard 시각화 (감정 통계 차트)
+- [ ] AWS 배포 (EC2 + RDS + S3)
+- [ ] Docker 컨테이너 최적화
+
+---
+
+## 👤 개발자
 
 **Taesik Won**
 
 - Backend & AI Developer
-- Focus: Generative AI, NLP, Data Engineering
+- Focus: Generative AI, NLP, RAG Systems
 - GitHub: [@TaesikWon](https://github.com/TaesikWon)
 
 ---
 
-## 📄 라이선스
+## 📜 라이선스
 
-Copyright © 2025 Taesik Won. All rights reserved.
-
-이 프로젝트의 소스코드는 **학습 및 참고 목적으로 공개**되었습니다.  
-무단 복제, 수정, 재배포 및 상업적 이용은 금지됩니다.
+본 프로젝트는 학습 및 연구 목적의 오픈소스 예시이며, 무단 상업적 이용 및 재배포를 금합니다.
