@@ -9,6 +9,11 @@
   --light-bg: #F9F6F1;        /* 아이보리 배경 */
   --soft-gray: #E8E0D6;       /* 부드러운 테두리 */
   --text-color: #3B2F2F;      /* 진한 브라운 텍스트 */
+
+  /* 🌈 감정별 색상 */
+  --emotion-positive: #4CAF50;
+  --emotion-negative: #E53935;
+  --emotion-neutral:  #A1887F;
 }
 
 /* ✅ 기본 설정 */
@@ -23,61 +28,24 @@ body {
   flex-direction: column;
 }
 
-/* ✅ 헤더 영역 (방법① + 방법② 적용) */
+/* ✅ 헤더 영역 */
 .header-gradient {
   background: linear-gradient(135deg, #8B6B4E, #6E523A);
   color: #fff;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
-  border-bottom: 3px solid var(--accent-color); /* 구분선 */
+  border-bottom: 3px solid var(--accent-color);
 }
 
-/* ✅ 네비게이션 바 (헤더보다 살짝 밝게) */
+/* ✅ 네비게이션 바 */
 .navbar {
   background-color: #A47C5B !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
-.navbar-brand {
-  font-weight: 700;
-  color: #fff !important;
-  letter-spacing: 0.5px;
-}
-
-.navbar-nav .nav-link {
-  color: #F9F6F1 !important;
-  font-weight: 500;
-  transition: color 0.2s ease, transform 0.2s ease;
-}
-
-.navbar-nav .nav-link:hover {
-  color: #fff !important;
-  transform: translateY(-1px);
-  text-decoration: none;
-}
-
-/* ✅ 메인 콘텐츠 */
-.main-center {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 3rem 1rem;
-}
-
-.content-box {
-  background: #fff;
-  border-radius: 16px;
-  padding: 3rem 2.5rem;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-  max-width: 750px;
-  width: 100%;
-  text-align: center;
-  transition: all 0.3s ease;
-}
-
-.content-box:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+.navbar-nav .nav-link.active {
+  color: var(--accent-color) !important;
+  font-weight: 600;
+  text-decoration: underline;
 }
 
 /* ✅ 버튼 */
@@ -88,113 +56,73 @@ body {
   transition: all 0.25s ease;
 }
 
-.btn-primary:hover {
-  background-color: var(--primary-dark);
-  border-color: var(--primary-dark);
-  transform: scale(1.03);
-}
-
-.btn-outline-primary {
-  color: var(--primary-dark);
-  border-color: var(--primary-color);
-}
-
-.btn-outline-primary:hover {
-  background-color: var(--primary-color);
-  color: #fff;
+/* 💫 클릭 시 살짝 눌리는 버튼 효과 */
+.btn-primary:active {
+  transform: scale(0.97);
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.15);
 }
 
 /* ✅ 폼 */
-.form-control {
-  border-radius: 8px;
-  border: 1px solid var(--soft-gray);
-  transition: all 0.2s ease;
-}
-
 .form-control:focus {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 0.25rem rgba(139, 107, 78, 0.25);
 }
 
-/* 🎯 섹션 제목 정렬 및 라인 강조 */
-.emotion-section h2 {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: var(--primary-dark);
-  margin-bottom: 1.5rem;
-  position: relative;
-  display: inline-block;
-}
-
-.emotion-section h2::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: -6px;
-  width: 100%;
-  height: 3px;
-  background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
-  border-radius: 2px;
-}
-
-/* 💬 텍스트 영역 개선 */
-textarea.form-control {
-  resize: none;
-  min-height: 120px;
-  padding: 1rem;
-  font-size: 1rem;
-  line-height: 1.5;
-  border-radius: 10px;
-  border: 1px solid var(--soft-gray);
-  background-color: #fff;
-  transition: all 0.2s ease;
-}
-
-textarea.form-control::placeholder {
-  color: #9f9184;
-}
-
-textarea.form-control:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 0.25rem rgba(139, 107, 78, 0.25);
-}
-
-/* ✅ 카드형 레이아웃 */
+/* ✅ 카드형 레이아웃 + 페이드인 애니메이션 */
 .card-custom {
   border: none;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeIn 0.6s ease forwards;
 }
 
-.card-custom:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* ✅ 푸터 */
-footer {
-  background-color: var(--primary-dark);
-  color: #fff;
-  text-align: center;
-  padding: 1rem 0;
-  margin-top: auto;
-  font-size: 0.9rem;
-  letter-spacing: 0.3px;
-  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.05);
+/* 💖 감정별 피드백 스타일 */
+.emotion-positive {
+  color: var(--emotion-positive);
+  font-weight: 700;
+  background-color: rgba(76, 175, 80, 0.08);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
 }
 
-/* ✅ 반응형 조정 */
-@media (max-width: 768px) {
-  .content-box {
-    padding: 2rem 1.5rem;
-  }
+.emotion-negative {
+  color: var(--emotion-negative);
+  font-weight: 700;
+  background-color: rgba(229, 57, 53, 0.08);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+}
 
-  .navbar-brand {
-    font-size: 1.1rem;
-  }
+.emotion-neutral {
+  color: var(--emotion-neutral);
+  font-weight: 700;
+  background-color: rgba(161, 136, 127, 0.08);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+}
 
-  header h1 {
-    font-size: 1.6rem;
-  }
+/* 🌀 브라운 골드 스피너 + 중앙 정렬 */
+#loadingSpinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner-gold {
+  color: var(--primary-color);
+  border-width: 4px;
+}
+
+.spinner-gold .spinner-border {
+  border-color: var(--primary-color) transparent var(--primary-color) transparent;
 }

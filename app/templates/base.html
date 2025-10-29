@@ -20,8 +20,8 @@
 <body>
   <!-- ✅ Header -->
   <header class="text-white text-center py-4 header-gradient">
-    <h1 class="fw-bold mb-1">SoulStay</h1>
-    <p class="lead mb-0">고객 감정 분석 기반 호텔 경험 관리 서비스</p>
+    <h1 class="fw-bold mb-1">🏨 SoulStay</h1>
+    <p class="lead mb-0">감정 분석으로 완성하는 호텔 경험 관리 플랫폼</p>
   </header>
 
   <!-- ✅ Navbar -->
@@ -34,9 +34,21 @@
 
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="/emotion">감정 분석</a></li>
-          <li class="nav-item"><a class="nav-link" href="/users">사용자 목록</a></li>
-          <li class="nav-item"><a class="nav-link" href="/auth/login">로그인</a></li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.url.path.startswith('/emotion') %}active{% endif %}" href="/emotion">
+              감정 분석
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.url.path.startswith('/users') %}active{% endif %}" href="/users">
+              사용자 목록
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.url.path.startswith('/auth') %}active{% endif %}" href="/auth/login">
+              로그인
+            </a>
+          </li>
         </ul>
       </div>
     </div>
@@ -56,5 +68,22 @@
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- ✅ 로딩 스피너 스크립트 (감정 분석 시) -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.querySelector("form[action='/emotion/analyze']");
+      if (form) {
+        const btn = form.querySelector("button[type='submit']");
+        btn.innerHTML += ' <span class="spinner-border spinner-border-sm ms-2 d-none" id="loading-spinner"></span>';
+
+        const spinner = form.querySelector("#loading-spinner");
+        form.addEventListener("submit", () => {
+          spinner.classList.remove("d-none");
+          btn.disabled = true;
+        });
+      }
+    });
+  </script>
 </body>
 </html>

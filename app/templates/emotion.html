@@ -4,22 +4,28 @@
 {% block content %}
 <div class="emotion-section">
 
-  <h2 class="fw-bold mb-4 text-teal">고객 감정 분석</h2>
+  <h2 class="fw-bold mb-4 text-teal">Comment</h2>
 
   <!-- 감정 분석 폼 -->
-  <form method="post" action="/emotion/analyze" class="mb-4">
+  <form id="emotionForm" method="post" action="/emotion/analyze" class="mb-4">
     <div class="mb-3">
       <textarea
         name="text"
         class="form-control"
         rows="4"
-        placeholder="고객님의 의견을 입력해주세요. 예) 객실이 매우 깨끗하고 조용했어요."
+        placeholder="고객님의 의견을 입력해주세요."
         required>{{ text or '' }}</textarea>
     </div>
 
-    <button type="submit" class="btn btn-primary px-4">
-      감정 분석 실행
+    <button id="analyzeBtn" type="submit" class="btn btn-primary px-4">
+      Start
     </button>
+
+    <!-- 🌀 로딩 스피너 -->
+    <div id="loadingSpinner" class="mt-3" style="display: none;">
+      <div class="spinner-border spinner-gold" role="status"></div>
+      <p class="mt-2 mb-0 text-muted small">분석 중입니다... 잠시만 기다려주세요 ☕</p>
+    </div>
   </form>
 
   <!-- 결과 영역 -->
@@ -27,13 +33,41 @@
   <div class="card card-custom mt-4">
     <div class="card-body text-start">
       <h5 class="card-title fw-bold text-teal">분석 결과</h5>
-      <p class="mb-1"><strong>감정:</strong> {{ result.emotion }}</p>
+
+      <p class="mb-1">
+        <strong>감정:</strong>
+        <span class="
+          {% if result.emotion == '긍정' %}
+            emotion-positive
+          {% elif result.emotion == '부정' %}
+            emotion-negative
+          {% else %}
+            emotion-neutral
+          {% endif %}
+        ">
+          {{ result.emotion }}
+        </span>
+      </p>
+
       {% if result.reason %}
       <p class="mb-0"><strong>이유:</strong> {{ result.reason }}</p>
       {% endif %}
     </div>
   </div>
-  {% endif %}
 
+  {% else %}
+  <div class="alert alert-light border mt-4 text-muted" role="alert">
+    아직 분석된 결과가 없습니다.<br>
+    위 입력창에 의견을 입력하시고 <strong>“Start”</strong>을 눌러보세요 😊
+  </div>
+  {% endif %}
 </div>
+
+<!-- 🔁 JS 로직 -->
+<script>
+document.getElementById("emotionForm").addEventListener("submit", function() {
+  document.getElementById("loadingSpinner").style.display = "block";
+  document.getElementById("analyzeBtn").disabled = true;
+});
+</script>
 {% endblock %}
