@@ -23,7 +23,7 @@ AI를 통해 고객 피드백의 감정을 자동 분석하고, 유사 사례를
 
 SoulStay는 고객 피드백을 AI로 분석하여 호텔 운영자가 고객 감정을 직관적으로 파악하고 서비스를 개선할 수 있도록 지원하는 플랫폼입니다.
 
-OpenAI GPT 감정 분석 결과를 ChromaDB 벡터 스토어에 저장하여 유사 피드백 검색, 트렌드 분석, 감정 통계 시각화를 제공합니다.
+Hugging Face 기반 로컬 감정 분석 모델과 OpenAI GPT를 결합하여 감정을 분류하고, ChromaDB 벡터 스토어에 저장하여 유사 피드백 검색, 트렌드 분석, 감정 통계 시각화를 제공합니다.
 
 ---
 
@@ -31,7 +31,7 @@ OpenAI GPT 감정 분석 결과를 ChromaDB 벡터 스토어에 저장하여 유
 
 | 기능 | 설명 |
 |------|------|
-| 💬 **감정 분석** | GPT-4o-mini로 긍정/부정/중립 분류 및 이유 제공 |
+| 💬 **감정 분석** | Hugging Face 모델로 긍정/부정/중립 분류 + GPT로 이유 생성 |
 | 🧠 **RAG 검색** | ChromaDB 기반 벡터 스토어 유사 피드백 검색 |
 | 👤 **회원 시스템** | JWT 기반 로그인/회원가입 (쿠키 저장) |
 | 📚 **데이터 저장** | PostgreSQL + SQLAlchemy로 감정 로그 및 사용자 데이터 관리 |
@@ -46,8 +46,10 @@ OpenAI GPT 감정 분석 결과를 ChromaDB 벡터 스토어에 저장하여 유
 | 분야 | 사용 기술 |
 |------|----------|
 | **Backend** | FastAPI, SQLAlchemy, PostgreSQL |
-| **AI / LLM** | OpenAI GPT-4o-mini, ChromaDB |
-| **Embedding** | OpenAI text-embedding-3-small |
+| **감정 분석** | Hugging Face (WhitePeak/bert-base-cased-Korean-sentiment) |
+| **문맥 생성** | OpenAI GPT-4o-mini (reason 생성 및 문맥 다듬기) |
+| **RAG / Vector DB** | ChromaDB, LangChain |
+| **Embedding** | Sentence Transformers |
 | **Auth** | JWT (Access + Refresh Token), python-jose |
 | **Scheduler** | APScheduler |
 | **Frontend** | Jinja2, Bootstrap, Custom CSS |
@@ -188,7 +190,8 @@ FastAPI 라우트 호출 시 분석 결과와 DB 저장 상태가 기록됩니�
 
 ### ✅ 현재 단계
 - [x] JWT 기반 인증 시스템
-- [x] RAG + GPT 감정 분석 통합
+- [x] Hugging Face 로컬 모델 감정 분석
+- [x] RAG + 벡터 검색 통합
 - [x] PostgreSQL 영구 저장
 - [x] APScheduler 자동 요약
 - [x] UI 기본 구조
@@ -197,6 +200,7 @@ FastAPI 라우트 호출 시 분석 결과와 DB 저장 상태가 기록됩니�
 - [ ] 감정 히스토리 페이지
 - [ ] RAG 검색 품질 향상
 - [ ] Dashboard 시각화 (감정 통계 차트)
+- [ ] Hugging Face 모델 fine-tuning
 - [ ] AWS 배포 (EC2 + RDS + S3)
 - [ ] Docker 컨테이너 최적화
 
@@ -215,4 +219,3 @@ FastAPI 라우트 호출 시 분석 결과와 DB 저장 상태가 기록됩니�
 ## 📜 라이선스
 
 본 프로젝트는 학습 및 연구 목적의 오픈소스 예시이며, 무단 상업적 이용 및 재배포를 금합니다.
-```
