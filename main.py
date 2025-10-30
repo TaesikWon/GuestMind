@@ -1,4 +1,4 @@
-# app/main.py
+# main.py
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -109,6 +109,5 @@ async def global_exception_handler(request: Request, exc: Exception):
 def root():
     return {
         "message": "SoulStay API running",
-        "version": "1.3",
         "scheduler": "active" if scheduler.running else "stopped",
     }

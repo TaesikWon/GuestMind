@@ -3,18 +3,20 @@ import os
 import logging
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_chroma import Chroma
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains import RetrievalQA
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema import Document
-from langchain_community.vectorstores import Chroma
+
+logger = logging.getLogger("soulstay.langchain_rag")
 
 
-logger = logging.getLogger("soulstay.rag")
-
-class RAGService:
-    """LangChain 기반 RAG 서비스"""
-
-    def __init__(self, collection_name="soulstay_feedback"):
+class LangChainRAGService:
+    def __init__(self, collection_name="soulstay_feedback", use_gpt: bool = False):
+        """
+        LangChain 기반 RAG 서비스
+        - use_gpt=False : 자체 모델만 사용 (기본값)
+        - use_gpt=True : OpenAI를 문장 자연화에 보조적으로 사용
+        """
         try:
             self.embeddings = OpenAIEmbeddings(openai_api_key=os.getenv("OPENAI_API_KEY"))
             self.vectorstore = Chroma(
@@ -22,51 +24,48 @@ class RAGService:
                 embedding_function=self.embeddings,
                 persist_directory="./chroma_langchain"
             )
-            self.llm = ChatOpenAI(
-                model="gpt-4o-mini",
-                temperature=0.3,
-                openai_api_key=os.getenv("OPENAI_API_KEY")
-            )
-            logger.info(f"✅ LangChain RAG 초기화 완료: {collection_name}")
+
+            self.llm = None
+            if use_gpt:
+                self.llm = ChatOpenAI(
+                    model="gpt-4o-mini",
+                    temperature=0.3,
+                    openai_api_key=os.getenv("OPENAI_API_KEY")
+                )
+
+            logger.info(f"✅ LangChain RAG 초기화 완료 (GPT 사용: {use_gpt})")
+
         except Exception as e:
-            logger.exception(f"❌ RAG 초기화 실패: {e}")
+            logger.exception(f"❌ LangChain RAG 초기화 실패: {e}")
             raise
 
     def add_document(self, text: str, metadata: dict = None):
-        """문서를 벡터스토어에 추가"""
+        """문서를 LangChain VectorStore에 추가"""
         try:
             splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
             chunks = splitter.split_text(text)
             docs = [Document(page_content=c, metadata=metadata or {}) for c in chunks]
             self.vectorstore.add_documents(docs)
-            logger.info(f"📚 {len(chunks)}개 문서 조각 저장 완료")
+            logger.info(f"📚 문서 추가 완료 ({len(chunks)}개 청크)")
             return True
         except Exception as e:
             logger.exception(f"❌ 문서 추가 실패: {e}")
             return False
 
-    def search_documents(self, query: str, top_k: int = 3):
-        """임베딩 기반 문서 검색"""
-        try:
-            retriever = self.vectorstore.as_retriever(search_kwargs={"k": top_k})
-            results = retriever.get_relevant_documents(query)
-            logger.info(f"🔍 {len(results)}개 결과 반환")
-            return results
-        except Exception as e:
-            logger.exception(f"❌ 검색 실패: {e}")
-            return []
+    def search(self, query: str, top_k: int = 3):
+        """RAG 벡터 검색"""
+        retriever = self.vectorstore.as_retriever(search_kwargs={"k": top_k})
+        return retriever.get_relevant_documents(query)
 
     def ask_with_context(self, query: str, top_k: int = 3):
-        """검색 결과를 기반으로 GPT 답변 생성"""
-        try:
-            retriever = self.vectorstore.as_retriever(search_kwargs={"k": top_k})
-            qa_chain = RetrievalQA.from_chain_type(
-                llm=self.llm,
-                retriever=retriever,
-                chain_type="stuff"
-            )
-            response = qa_chain.invoke({"query": query})
-            return response["result"]
-        except Exception as e:
-            logger.exception(f"❌ RAG 질의 실패: {e}")
-            return "오류가 발생했습니다."
+        """검색 + GPT로 문맥 정리 (보조용)"""
+        if not self.llm:
+            logger.warning("⚠️ GPT 비활성화 상태, 검색 결과만 반환")
+            return self.search(query, top_k=top_k)
+
+        retriever = self.vectorstore.as_retriever(search_kwargs={"k": top_k})
+        qa_chain = RetrievalQA.from_chain_type(llm=self.llm, retriever=retriever, chain_type="stuff")
+        answer = qa_chain.invoke({"query": query})
+        return answer["result"]
+
+RAGService = LangChainRAGService

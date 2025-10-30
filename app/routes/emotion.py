@@ -8,7 +8,7 @@ from app.database import get_db
 from app.services.emotion_service import analyze_emotion
 from app.models.user import User
 from app.core.auth_utils import get_current_user_optional
-from app.services.rag_service import RAGService
+from app.services.rag_service import LangChainRAGService   # ✅ 수정됨
 from app.models.emotion_log import EmotionLog
 
 logger = logging.getLogger(__name__)
@@ -16,7 +16,8 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/emotion", tags=["Emotion Analysis"])
 templates = Jinja2Templates(directory="app/templates")
 
-rag_service = RAGService()
+rag_service = LangChainRAGService()   # ✅ 수정됨
+
 
 
 @router.get("/", response_class=HTMLResponse)
