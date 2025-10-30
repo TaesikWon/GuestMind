@@ -1,69 +1,34 @@
 {% extends "base.html" %}
-{% block title %}로그인 - SoulStay{% endblock %}
-
+{% block title %}로그인 | SoulStay{% endblock %}
 {% block content %}
-<div class="auth-section fade-in">
-
-  <h2 class="fw-bold mb-3 text-teal">🔑 로그인</h2>
-  <p class="text-muted mb-4">SoulStay에 다시 오신 것을 환영합니다.</p>
-
-  <!-- 로그인 폼 -->
-  <form method="post" action="/auth/login" id="loginForm">
-    <div class="mb-3 text-start">
-      <label for="email" class="form-label fw-semibold">이메일</label>
-      <input
-        type="email"
-        id="email"
-        name="email"
-        class="form-control"
-        placeholder="you@example.com"
-        required>
-    </div>
-
-    <div class="mb-3 text-start">
-      <label for="password" class="form-label fw-semibold">비밀번호</label>
-      <input
-        type="password"
-        id="password"
-        name="password"
-        class="form-control"
-        placeholder="비밀번호를 입력하세요"
-        required>
-    </div>
+<div class="card shadow-sm mx-auto" style="max-width: 400px;">
+  <div class="card-body p-4">
+    <h4 class="card-title text-center mb-4 text-brown">로그인</h4>
 
     {% if error %}
-    <div class="alert alert-danger text-start">{{ error }}</div>
+      <div class="alert alert-danger text-center">{{ error }}</div>
+    {% endif %}
+    {% if success %}
+      <div class="alert alert-success text-center">{{ success }}</div>
     {% endif %}
 
-    {% if message %}
-    <div class="alert alert-success text-start">{{ message }}</div>
-    {% endif %}
+    <form method="post" action="/auth/login">
+      <div class="mb-3">
+        <label for="email" class="form-label">이메일</label>
+        <input type="email" class="form-control" id="email" name="email" required>
+      </div>
 
-    <!-- 버튼 + 스피너 -->
-    <button type="submit" class="btn btn-primary w-100 py-2 position-relative" id="loginButton">
-      <span id="btnText">로그인</span>
-      <div id="spinner" class="spinner-border spinner-border-sm text-light ms-2 d-none" role="status"></div>
-    </button>
-  </form>
+      <div class="mb-3">
+        <label for="password" class="form-label">비밀번호</label>
+        <input type="password" class="form-control" id="password" name="password" required>
+      </div>
 
-  <!-- 회원가입 안내 -->
-  <div class="text-center mt-3">
-    <p class="text-muted">
-      계정이 없으신가요?
-      <a href="/auth/register" class="text-decoration-none text-primary fw-semibold">회원가입</a>
+      <button type="submit" class="btn btn-primary w-100 mt-3">로그인</button>
+    </form>
+
+    <p class="text-center mt-3 mb-0">
+      계정이 없으신가요? <a href="/auth/register">회원가입</a>
     </p>
   </div>
 </div>
-
-<!-- 로딩 스피너 스크립트 -->
-<script>
-document.getElementById('loginForm').addEventListener('submit', function() {
-  const btn = document.getElementById('loginButton');
-  const spinner = document.getElementById('spinner');
-  const text = document.getElementById('btnText');
-  spinner.classList.remove('d-none');
-  text.textContent = '로그인 중...';
-  btn.disabled = true;
-});
-</script>
 {% endblock %}

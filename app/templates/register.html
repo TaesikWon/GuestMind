@@ -1,104 +1,37 @@
 {% extends "base.html" %}
-{% block title %}회원가입 - SoulStay{% endblock %}
-
+{% block title %}회원가입 | SoulStay{% endblock %}
 {% block content %}
-<div class="auth-section fade-in">
-
-  <h2 class="fw-bold mb-3 text-teal">📝 회원가입</h2>
-  <p class="text-muted mb-4">SoulStay의 맞춤형 감정 분석 서비스를 시작하세요.</p>
-
-  <!-- 회원가입 폼 -->
-  <form method="post" action="/auth/register" id="registerForm">
-
-    <div class="mb-3 text-start">
-      <label for="name" class="form-label fw-semibold">이름</label>
-      <input
-        type="text"
-        id="name"
-        name="name"
-        class="form-control"
-        placeholder="홍길동"
-        required>
-    </div>
-
-    <div class="mb-3 text-start">
-      <label for="email" class="form-label fw-semibold">이메일</label>
-      <input
-        type="email"
-        id="email"
-        name="email"
-        class="form-control"
-        placeholder="you@example.com"
-        required>
-    </div>
-
-    <div class="mb-3 text-start">
-      <label for="password" class="form-label fw-semibold">비밀번호</label>
-      <input
-        type="password"
-        id="password"
-        name="password"
-        class="form-control"
-        placeholder="8자 이상 입력"
-        minlength="8"
-        required>
-    </div>
-
-    <div class="mb-3 text-start">
-      <label for="confirm_password" class="form-label fw-semibold">비밀번호 확인</label>
-      <input
-        type="password"
-        id="confirm_password"
-        name="confirm_password"
-        class="form-control"
-        placeholder="비밀번호를 다시 입력하세요"
-        minlength="8"
-        required>
-    </div>
+<div class="card shadow-sm mx-auto" style="max-width: 420px;">
+  <div class="card-body p-4">
+    <h4 class="card-title text-center mb-4 text-brown">회원가입</h4>
 
     {% if error %}
-    <div class="alert alert-danger text-start">{{ error }}</div>
+      <div class="alert alert-danger text-center">{{ error }}</div>
+    {% endif %}
+    {% if success %}
+      <div class="alert alert-success text-center">{{ success }}</div>
     {% endif %}
 
-    {% if message %}
-    <div class="alert alert-success text-start">{{ message }}</div>
-    {% endif %}
+    <form method="post" action="/auth/register">
+      <div class="mb-3">
+        <label for="email" class="form-label">이메일</label>
+        <input type="email" class="form-control" id="email" name="email"
+               value="{{ email or '' }}" required>
+      </div>
 
-    <!-- 버튼 + 스피너 -->
-    <button type="submit" class="btn btn-primary w-100 py-2 position-relative" id="registerButton">
-      <span id="btnText">회원가입</span>
-      <div id="spinner" class="spinner-border spinner-border-sm text-light ms-2 d-none" role="status"></div>
-    </button>
+      <div class="mb-3">
+        <label for="name" class="form-label">이름</label>
+        <input type="text" class="form-control" id="name" name="name"
+               value="{{ name or '' }}" required>
+      </div>
 
-  </form>
+      <div class="mb-3">
+        <label for="password" class="form-label">비밀번호</label>
+        <input type="password" class="form-control" id="password" name="password" required>
+      </div>
 
-  <!-- 로그인 링크 -->
-  <div class="text-center mt-3">
-    <p class="text-muted">
-      이미 계정이 있으신가요?
-      <a href="/auth/login" class="text-decoration-none text-primary fw-semibold">로그인</a>
-    </p>
+      <button type="submit" class="btn btn-primary w-100 mt-3">가입하기</button>
+    </form>
   </div>
 </div>
-
-<!-- 로딩 스피너 스크립트 -->
-<script>
-document.getElementById('registerForm').addEventListener('submit', function(event) {
-  const pwd = document.getElementById('password').value;
-  const confirm = document.getElementById('confirm_password').value;
-
-  if (pwd !== confirm) {
-    event.preventDefault();
-    alert("비밀번호가 일치하지 않습니다.");
-    return;
-  }
-
-  const btn = document.getElementById('registerButton');
-  const spinner = document.getElementById('spinner');
-  const text = document.getElementById('btnText');
-  spinner.classList.remove('d-none');
-  text.textContent = '등록 중...';
-  btn.disabled = true;
-});
-</script>
 {% endblock %}

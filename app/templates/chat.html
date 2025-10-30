@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}SoulStay 챗봇 | 고객 상담{% endblock %}
+{% block content %}
+
+<div class="card shadow-sm mx-auto" style="max-width: 600px;">
+  <div class="card-body p-4">
+    <h4 class="card-title text-center mb-3 text-brown">🧭 SoulStay 고객 챗봇</h4>
+
+    <!-- Chat window -->
+    <div id="chat-box" class="border rounded p-3 mb-3"
+         style="height: 420px; overflow-y: auto; background-color: #fffaf5;">
+      <div class="text-center text-muted mt-3">대화를 시작해보세요 💬</div>
+    </div>
+
+    <!-- Input -->
+    <form id="chat-form" class="d-flex">
+      <input id="user-input" type="text" class="form-control me-2"
+             placeholder="메시지를 입력하세요..." required>
+      <button type="submit" class="btn btn-primary">전송</button>
+    </form>
+  </div>
+</div>
+
+<script>
+const chatBox = document.getElementById('chat-box');
+const chatForm = document.getElementById('chat-form');
+const userInput = document.getElementById('user-input');
+
+function appendMessage(sender, text, emotion=null) {
+  const msg = document.createElement('div');
+  msg.classList.add('mb-2');
+
+  // 감정별 색상
+  let bubbleColor = '#f0e5da'; // 기본
+  if (emotion === 'positive') bubbleColor = '#e8d5b7';
+  if (emotion === 'negative') bubbleColor = '#d9b5a0';
+  if (emotion === 'neutral')  bubbleColor = '#eae3dc';
+
+  msg.innerHTML = sender === 'user'
+    ? `<div class="text-end">
+         <span class="px-3 py-2 rounded-pill text-light" style="background-color:#7b5e57;">${text}</span>
+       </div>`
+    : `<div class="text-start">
+         <span class="px-3 py-2 rounded-pill" style="background-color:${bubbleColor}; color:#3a2b28;">
+           ${text}
+         </span>
+       </div>`;
+
+  chatBox.appendChild(msg);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+chatForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const message = userInput.value.trim();
+  if (!message) return;
+
+  appendMessage('user', message);
+  userInput.value = '';
+
+  const res = await fetch('/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message })
+  });
+  const data = await res.json();
+
+  appendMessage('bot', data.response || '응답을 가져오지 못했습니다.', data.emotion);
+});
+</script>
+{% endblock %}

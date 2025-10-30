@@ -12,11 +12,7 @@ logger = logging.getLogger("soulstay.langchain_rag")
 
 class LangChainRAGService:
     def __init__(self, collection_name="soulstay_feedback", use_gpt: bool = False):
-        """
-        LangChain 기반 RAG 서비스
-        - use_gpt=False : 자체 모델만 사용 (기본값)
-        - use_gpt=True : OpenAI를 문장 자연화에 보조적으로 사용
-        """
+        """LangChain 기반 RAG 서비스"""
         try:
             self.embeddings = OpenAIEmbeddings(openai_api_key=os.getenv("OPENAI_API_KEY"))
             self.vectorstore = Chroma(
@@ -67,5 +63,6 @@ class LangChainRAGService:
         qa_chain = RetrievalQA.from_chain_type(llm=self.llm, retriever=retriever, chain_type="stuff")
         answer = qa_chain.invoke({"query": query})
         return answer["result"]
+
 
 RAGService = LangChainRAGService

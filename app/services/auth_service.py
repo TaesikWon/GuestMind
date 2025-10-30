@@ -1,13 +1,19 @@
-# app/services/auth_service.py
 import logging
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+from fastapi.security import OAuth2PasswordBearer
 from app.config import settings
 from app.models.user import User
 
 logger = logging.getLogger("soulstay.auth")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# =============================
+# 🔐 OAuth2 스킴 설정
+# =============================
+# 로그인 시 토큰을 발급받을 URL 지정 (/auth/login)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 # =============================
 # 🔐 비밀번호 관련
@@ -19,7 +25,7 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 # =============================
-# 🔑 JWT 토큰
+# 🔑 JWT 토큰 생성
 # =============================
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     try:
@@ -48,16 +54,16 @@ def create_refresh_token(data: dict):
 # =============================
 # 👤 유저 인증 로직
 # =============================
-def authenticate_user(username: str, password: str, db):
+def authenticate_user(email: str, password: str, db):
     try:
-        user = db.query(User).filter(User.username == username).first()
+        user = db.query(User).filter(User.email == email).first()
         if not user:
-            logger.warning(f"❌ 로그인 실패 - 존재하지 않는 사용자: {username}")
+            logger.warning(f"❌ 로그인 실패 - 존재하지 않는 사용자: {email}")
             return None
-        if not verify_password(password, user.hashed_password):
-            logger.warning(f"❌ 로그인 실패 - 비밀번호 불일치: {username}")
+        if not verify_password(password, user.password):
+            logger.warning(f"❌ 로그인 실패 - 비밀번호 불일치: {email}")
             return None
-        logger.info(f"✅ 로그인 성공: {username}")
+        logger.info(f"✅ 로그인 성공: {email}")
         return user
     except Exception as e:
         logger.exception(f"사용자 인증 중 오류: {e}")

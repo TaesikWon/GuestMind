@@ -7,12 +7,23 @@ from apscheduler.triggers.cron import CronTrigger
 from contextlib import asynccontextmanager
 import logging
 from dotenv import load_dotenv
+
+# ==========================
+# 🌱 환경 설정 로드
+# ==========================
 load_dotenv()
 
 # -------------------------------
 # 🔹 내부 모듈 Import
 # -------------------------------
-from app.routes import auth, emotion, rag, user as user_routes
+from app.routes import (
+    auth,
+    emotion,
+    rag,
+    user as user_routes,
+    chat,        # 💬 챗봇 API 라우터
+    chat_ui,     # 💻 챗봇 UI 페이지 라우터
+)
 from app.api import health
 from app.database import Base, engine, SessionLocal
 from app.services import summary_service
@@ -51,7 +62,11 @@ def run_daily_pipeline():
 # ==========================
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """앱 실행 전후 작업 관리"""
+    # DB 초기화
     Base.metadata.create_all(bind=engine)
+
+    # 스케줄러 시작
     if not scheduler.get_jobs():
         scheduler.add_job(
             run_daily_pipeline,
@@ -62,8 +77,9 @@ async def lifespan(app: FastAPI):
         scheduler.start()
         logger.info("🕒 Scheduler started")
 
-    yield  # 앱 실행 중
+    yield  # 앱 실행 중 상태
 
+    # 앱 종료 시 스케줄러 중단
     if scheduler.running:
         scheduler.shutdown()
         logger.info("🛑 Scheduler stopped")
@@ -78,7 +94,7 @@ app = FastAPI(
 )
 
 # ==========================
-# 📁 정적 파일
+# 📁 정적 파일 (CSS, JS, 이미지 등)
 # ==========================
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
@@ -89,6 +105,8 @@ app.include_router(auth.router)
 app.include_router(emotion.router)
 app.include_router(user_routes.router)
 app.include_router(rag.router)
+app.include_router(chat.router)      # 💬 챗봇 API
+app.include_router(chat_ui.router)   # 💻 챗봇 UI
 app.include_router(health.router)
 
 # ==========================
@@ -107,6 +125,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 # ==========================
 @app.get("/")
 def root():
+    """기본 상태 확인용 엔드포인트"""
     return {
         "message": "SoulStay API running",
         "scheduler": "active" if scheduler.running else "stopped",
