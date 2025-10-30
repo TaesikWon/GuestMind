@@ -1,132 +1,32 @@
-# 📘 SoulStay 요구사항 정의서
+# 📋 SoulStay 기능 요구사항 명세서
 
----
-
-## 1️⃣ 프로젝트 개요
-
-| 항목 | 내용 |
-|------|------|
-| **프로젝트명** | SoulStay |
-| **한줄 소개** | AI 기반 감정 분석을 활용한 호텔 고객 경험 관리 플랫폼 |
-| **개발 목적** | 고객 피드백의 감정 상태를 자동 분석하고, 유사 사례 검색 및 통계 요약을 통해 고객 만족도 개선에 기여 |
-| **기술 스택** | FastAPI, PostgreSQL, SQLAlchemy, OpenAI GPT-4o-mini, LangChain, ChromaDB, APScheduler, Jinja2 |
-
----
-
-## 2️⃣ 시스템 개요
-
-SoulStay는 호텔 고객 피드백(리뷰, 설문 등)을 입력받아  
-**AI 모델(OpenAI GPT)**을 통해 감정 분석을 수행하고,  
-분석 결과를 **데이터베이스와 벡터스토어**에 저장하여  
-**RAG 기반 유사 피드백 검색** 및 **일일 요약 자동화** 기능을 제공합니다.
-
----
-
-## 3️⃣ 주요 기능 요약
-
-| 구분 | 기능명 | 설명 |
-|------|--------|------|
-| **회원 관리** | 회원가입 / 로그인 | 사용자 계정 생성 및 인증 처리 (JWT 예정) |
-|  | 비밀번호 암호화 | bcrypt 기반 해시 저장 |
-| **감정 분석** | 피드백 감정 분석 | OpenAI API를 통해 긍정/부정/중립 감정 분류 |
-|  | 감정 근거 추출 | LLM이 감정 근거(reason) 필드를 함께 반환 |
-| **데이터 저장** | 감정 로그 저장 | emotion_logs 테이블에 감정 결과 저장 |
-|  | 사용자별 로그 연동 | user_id 외래키로 연결 |
-| **RAG 검색** | 유사 피드백 검색 | ChromaDB + LangChain 기반 벡터 검색 |
-| **일일 요약** | 자동 감정 통계 | APScheduler가 매일 자정에 실행, daily_summaries 테이블에 저장 |
-| **UI/UX** | 반응형 웹 | Jinja2 + Bootstrap5로 간단한 웹 인터페이스 제공 |
-| **로깅 시스템** | 로그 파일 저장 | 모든 분석 결과 및 오류를 /logs 폴더에 저장 |
-
----
-
-## 4️⃣ 비기능 요구사항
-
-| 항목 | 요구사항 |
-|------|----------|
-| **성능** | 1초 이내 감정 분석 응답 (LLM 호출 제외 시) |
-| **보안** | 사용자 비밀번호 해시 저장 (bcrypt) |
-| **데이터 무결성** | FK 제약조건(user_id)으로 유효한 사용자만 로그 등록 가능 |
-| **신뢰성** | Scheduler 실패 시 자동 예외 처리 및 로그 기록 |
-| **확장성** | LangChain RAG 구조로 LLM/Embedding 교체 용이 |
-| **유지보수성** | 모듈 단위 구조 (routes, services, models) 유지 |
-
----
-
-## 5️⃣ 데이터베이스 설계 요약
-
-### 🧩 users 테이블
-
-| 필드명 | 타입 | 설명 |
-|--------|------|------|
-| **id** | SERIAL (PK) | 사용자 고유 ID |
-| **username** | VARCHAR | 로그인 ID |
-| **password_hash** | VARCHAR | 암호화된 비밀번호 |
-| **created_at** | TIMESTAMP | 생성 시각 |
-| **last_login** | TIMESTAMP | 마지막 로그인 시각 |
-
-### 🧩 emotion_logs 테이블
-
-| 필드명 | 타입 | 설명 |
-|--------|------|------|
-| **id** | SERIAL (PK) | 로그 ID |
-| **user_id** | INTEGER (FK) | 작성자 ID |
-| **text** | VARCHAR | 피드백 내용 |
-| **emotion** | VARCHAR | 감정 결과 |
-| **reason** | VARCHAR | 감정 근거 |
-| **created_at** | TIMESTAMP | 분석 시각 |
-
-### 🧩 daily_summaries 테이블
-
-| 필드명 | 타입 | 설명 |
-|--------|------|------|
-| **id** | SERIAL (PK) | 요약 ID |
-| **user_id** | INTEGER (FK) | 사용자 ID |
-| **date** | DATE | 요약 날짜 |
-| **total_feedback** | INTEGER | 피드백 수 |
-| **positive_ratio** | FLOAT | 긍정 비율 |
-| **negative_ratio** | FLOAT | 부정 비율 |
-| **neutral_ratio** | FLOAT | 중립 비율 |
-| **created_at** | TIMESTAMP | 요약 시각 |
-
----
-
-## 6️⃣ 시스템 아키텍처
-```
-사용자 → FastAPI → EmotionService → OpenAI GPT-4o-mini
-                              ↓
-                      EmotionLog (PostgreSQL)
-                              ↓
-                     ChromaDB (Vector Store)
-                              ↓
-                     APScheduler (일일 요약)
-```
-
----
-
-## 7️⃣ 향후 개선 계획
-
-| 단계 | 개선 내용 |
-|------|-----------|
-| **Phase 1** | JWT 인증 완성 및 Refresh Token 추가 |
-| **Phase 2** | 감정 통계 대시보드 시각화 (Chart.js / Plotly) |
-| **Phase 3** | Docker 컨테이너화 및 AWS 배포 |
-| **Phase 4** | 챗봇 기능 확장 (고객 응대 AI 시나리오) |
-
----
-
-## 8️⃣ 문서 메타정보
-
-| 항목 | 내용 |
-|------|------|
-| **작성자** | Taesik Won |
-| **버전** | 1.0 |
-| **작성일** | 2025-10-30 |
-| **문서 목적** | SoulStay 프로젝트의 기능 및 시스템 요구사항 명세 |
-
----
-
-## ✅ 프로젝트 정의
-
-**SoulStay**는 호텔 산업의 고객 경험 관리를 혁신하기 위한 AI 기반 플랫폼으로,  
-감정 분석과 RAG 기술을 활용하여 **고객 피드백을 자동으로 분석하고 인사이트를 제공**하는  
-**차세대 호텔 고객 경험 관리 시스템**입니다.
+| 요구사항 ID | 요구사항명 | 기능 ID | 기능명 | 상세 설명 | 비고 |
+|------------|-----------|---------|--------|-----------|------|
+| **ACC01** | 계정 관리 | FBF-01 | 회원가입 및 로그인 | JWT 기반 사용자 인증 및 토큰 발급 기능 구현 | FastAPI, PostgreSQL |
+|  |  | FBF-02 | 비밀번호 암호화 | bcrypt 해시 기반 암호 저장 | 보안 강화 |
+|  |  | FBF-03 | 로그인 상태 유지 | Access/Refresh Token 구조를 통해 지속 로그인 유지 | Refresh Token 기능 예정 |
+|  |  | FBF-04 | 회원 탈퇴 | 사용자 정보 및 연관 로그 삭제 |  |
+| **EMO01** | 감정 분석 | FBF-05 | 감정 분석 API | OpenAI GPT-4o-mini를 이용해 고객 피드백의 감정(긍정/부정/중립) 분류 | OpenAI API |
+|  |  | FBF-06 | 감정 근거 추출 | LLM이 감정 결과와 함께 근거(reason) 반환 | RAG와 연동 |
+|  |  | FBF-07 | 감정 로그 저장 | emotion_logs 테이블에 감정 결과 저장 | user_id FK 연결 |
+| **RAG01** | 유사 피드백 검색 | FBF-08 | 벡터 임베딩 저장 | 고객 피드백 데이터를 ChromaDB에 벡터 형태로 저장 | LangChain, ChromaDB |
+|  |  | FBF-09 | 유사 피드백 검색 | 입력 피드백과 유사한 감정 로그 검색 및 반환 | Semantic Search |
+| **SCH01** | 자동 요약 | FBF-10 | 일일 감정 요약 | APScheduler를 이용해 매일 자정 감정 통계 자동 요약 | daily_summaries 테이블 |
+|  |  | FBF-11 | 예외 처리 및 로깅 | 스케줄 실행 오류 발생 시 예외 처리 및 로그 기록 | Log 파일 관리 |
+| **DAS01** | 감정 통계 대시보드 | FFH-01 | 대시보드 UI 구성 | Jinja2 + Chart.js 기반 감정 통계 시각화 페이지 구현 | 관리자용 |
+|  |  | FBF-12 | 통계 데이터 API | `/dashboard/data` 엔드포인트에서 기간별 감정 통계 제공 | JSON 반환 |
+|  |  | FBF-13 | 통계 자동 갱신 | APScheduler로 일정 주기마다 요약 데이터 최신화 |  |
+| **USR01** | 사용자 로그 관리 | FBF-14 | 사용자별 로그 조회 | 사용자 ID 기준으로 감정 분석 및 검색 로그 조회 | 관리자 접근 제한 |
+|  |  | FBF-15 | 로그 백업 | 로그 파일 자동 백업 및 보관 | /logs 디렉토리 |
+| **DBS01** | 데이터베이스 | FBF-16 | 사용자 DB | users, emotion_logs, daily_summaries 테이블 설계 및 구축 | PostgreSQL |
+|  |  | FBF-17 | 외래키 제약조건 | user_id FK를 통한 데이터 무결성 보장 |  |
+| **NET01** | 네트워크 및 서버 | FBN-01 | HTTPS 통신 | SSL 인증서를 통한 통신 암호화 | 보안 강화 |
+|  |  | FBN-02 | 요청 대기 처리 | 서버 과부하 방지를 위한 비동기 처리 및 timeout 설정 | Gunicorn + uvicorn |
+|  |  | FBN-03 | 로드 밸런싱 | 다중 워커 기반 부하 분산 처리 |  |
+| **SYS01** | 시스템 구조 | FAS-01 | 모듈 단위 구조화 | routes / services / models 폴더 구조로 유지보수성 향상 |  |
+|  |  | FAS-02 | 로깅 시스템 | 시스템 로그를 /logs 디렉토리에 파일 단위로 기록 |  |
+| **EXT01** | UI 및 프론트엔드 | FFH-02 | 반응형 웹 UI | Bootstrap5 기반 반응형 인터페이스 구현 |  |
+|  |  | FFH-03 | 감정 결과 시각 표시 | 분석 결과에 따라 긍정/부정/중립 색상 구분 표시 | UX 강화 |
+| **DEV01** | 개발 환경 및 배포 | FAD-01 | Docker 컨테이너화 | FastAPI, DB, Scheduler 통합 Docker 구성 |  |
+|  |  | FAD-02 | AWS 배포 | EC2 + RDS + S3 기반 인프라 구축 | 향후 계획 |
+| **BOT01** | 챗봇 기능(예정) | FAC-01 | 고객 응대 챗봇 | 감정 기반 대화 모델로 고객 피드백 대응 | Phase 4 예정 |
