@@ -58,3 +58,48 @@ def get_current_user(token: str = Depends(auth_service.oauth2_scheme), db: Sessi
         return user
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="토큰 인증 실패")
+
+from fastapi import APIRouter, Form, Request, Depends
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
+from sqlalchemy.orm import Session
+from app.database import get_db
+from app.services import auth_service
+from app.models.user import User
+
+router = APIRouter(prefix="/auth", tags=["Auth"])
+templates = Jinja2Templates(directory="app/templates")
+
+# ✅ 로그인 폼 렌더링
+@router.get("/login", response_class=HTMLResponse)
+def show_login_form(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+# ✅ 로그인 처리
+@router.post("/login", response_class=HTMLResponse)
+def login_user(
+    request: Request,
+    email: str = Form(...),
+    password: str = Form(...),
+    db: Session = Depends(get_db),
+):
+    user = auth_service.authenticate_user(email, password, db)
+    if not user:
+        return templates.TemplateResponse(
+            "login.html",
+            {"request": request, "error": "이메일 또는 비밀번호가 올바르지 않습니다."},
+        )
+
+    # JWT 토큰 발급
+    access_token = auth_service.create_access_token({"sub": user.email})
+    refresh_token = auth_service.create_refresh_token({"sub": user.email})
+
+    return templates.TemplateResponse(
+        "login.html",
+        {
+            "request": request,
+            "success": f"🎉 {user.name}님, 로그인에 성공했습니다!",
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+        },
+    )

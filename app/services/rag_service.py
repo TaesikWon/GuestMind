@@ -1,68 +1,53 @@
-# app/services/rag_service.py
 import os
-import logging
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-from langchain_chroma import Chroma
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.chains import RetrievalQA
+from langchain_community.vectorstores import Chroma
+from langchain_community.embeddings import SentenceTransformerEmbeddings
 from langchain.schema import Document
 
-logger = logging.getLogger("soulstay.langchain_rag")
+class RAGService:
+    """LangChain + Chroma 기반 RAG 검색 서비스"""
 
+    def __init__(self):
+        # ✅ 임베딩 모델 설정 (한국어 대응 SentenceTransformer)
+        embedding_model = "jhgan/ko-sroberta-multitask"
+        self.embedding = SentenceTransformerEmbeddings(model_name=embedding_model)
 
-class LangChainRAGService:
-    def __init__(self, collection_name="soulstay_feedback", use_gpt: bool = False):
-        """LangChain 기반 RAG 서비스"""
+        # ✅ Chroma 벡터 DB 초기화
+        self.persist_dir = os.path.join("app", "services", "embeddings", "soulstay_index")
+        os.makedirs(self.persist_dir, exist_ok=True)
+
+        self.vector_db = Chroma(
+            collection_name="soulstay_reviews",
+            embedding_function=self.embedding,
+            persist_directory=self.persist_dir
+        )
+
+    def add_documents(self, docs: list):
+        """
+        텍스트 리스트를 받아 Chroma에 추가
+        docs: ["문장1", "문장2", ...]
+        """
+        documents = [Document(page_content=text) for text in docs]
+        self.vector_db.add_documents(documents)
+        self.vector_db.persist()
+        return f"✅ {len(docs)}개 문서가 추가되었습니다."
+
+    def search(self, text: str, emotion: str, top_k: int = 3):
+        """
+        text: 사용자가 입력한 문장
+        emotion: 감정 분석 결과 (positive/negative/neutral)
+        """
         try:
-            self.embeddings = OpenAIEmbeddings(openai_api_key=os.getenv("OPENAI_API_KEY"))
-            self.vectorstore = Chroma(
-                collection_name=collection_name,
-                embedding_function=self.embeddings,
-                persist_directory="./chroma_langchain"
-            )
+            results = self.vector_db.similarity_search(text, k=top_k)
+            if not results:
+                return [{"text": "유사한 사례가 없습니다.", "emotion": "neutral"}]
 
-            self.llm = None
-            if use_gpt:
-                self.llm = ChatOpenAI(
-                    model="gpt-4o-mini",
-                    temperature=0.3,
-                    openai_api_key=os.getenv("OPENAI_API_KEY")
-                )
-
-            logger.info(f"✅ LangChain RAG 초기화 완료 (GPT 사용: {use_gpt})")
-
+            # LangChain Document 객체 → dict로 변환
+            response = [{"text": r.page_content, "emotion": emotion} for r in results]
+            return response
         except Exception as e:
-            logger.exception(f"❌ LangChain RAG 초기화 실패: {e}")
-            raise
-
-    def add_document(self, text: str, metadata: dict = None):
-        """문서를 LangChain VectorStore에 추가"""
-        try:
-            splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
-            chunks = splitter.split_text(text)
-            docs = [Document(page_content=c, metadata=metadata or {}) for c in chunks]
-            self.vectorstore.add_documents(docs)
-            logger.info(f"📚 문서 추가 완료 ({len(chunks)}개 청크)")
-            return True
-        except Exception as e:
-            logger.exception(f"❌ 문서 추가 실패: {e}")
-            return False
-
-    def search(self, query: str, top_k: int = 3):
-        """RAG 벡터 검색"""
-        retriever = self.vectorstore.as_retriever(search_kwargs={"k": top_k})
-        return retriever.get_relevant_documents(query)
-
-    def ask_with_context(self, query: str, top_k: int = 3):
-        """검색 + GPT로 문맥 정리 (보조용)"""
-        if not self.llm:
-            logger.warning("⚠️ GPT 비활성화 상태, 검색 결과만 반환")
-            return self.search(query, top_k=top_k)
-
-        retriever = self.vectorstore.as_retriever(search_kwargs={"k": top_k})
-        qa_chain = RetrievalQA.from_chain_type(llm=self.llm, retriever=retriever, chain_type="stuff")
-        answer = qa_chain.invoke({"query": query})
-        return answer["result"]
+            print(f"[RAG ERROR] {e}")
+            return [{"text": f"⚠️ 검색 오류: {str(e)}", "emotion": "error"}]
 
 
-RAGService = LangChainRAGService
+# ✅ 호환용 (기존 코드 유지)
+LangChainRAGService = RAGService

@@ -9,11 +9,18 @@ class ChatAPI:
         self.response = ResponseGenerator()
 
     def process_message(self, text: str):
-        emotion = self.emotion.analyze(text)
-        similar = self.rag.search(text, emotion)
-        reply = self.response.compose(text, emotion, similar)
-        return {
-            "emotion": emotion,
-            "similar_cases": similar,
-            "response": reply
-        }
+        try:
+            emotion = self.emotion.analyze(text)
+            similar = self.rag.search(text, emotion)
+            reply = self.response.compose(text, emotion, similar)
+            return {
+                "emotion": emotion,
+                "similar_cases": similar,
+                "response": reply,
+            }
+        except Exception as e:
+            return {
+                "emotion": "error",
+                "similar_cases": [],
+                "response": f"⚠️ 처리 중 오류 발생: {e}",
+            }
