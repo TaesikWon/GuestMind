@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from app.routes import chat
 from apscheduler.schedulers.background import BackgroundScheduler
 import logging
+from dotenv import load_dotenv  # ✅ 추가
+load_dotenv()  # ✅ .env 파일 로드
 
 logger = logging.getLogger("soulstay.main")
 
