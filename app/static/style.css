@@ -3,12 +3,13 @@
 
 /* 🎨 색상 팔레트 */
 :root {
-  --primary-color: #8B6B4E;   /* 메인 브라운 골드 */
-  --primary-dark: #6E523A;    /* 어두운 버전 */
-  --accent-color: #D6B98C;    /* 밝은 골드 */
-  --light-bg: #F9F6F1;        /* 아이보리 배경 */
-  --soft-gray: #E8E0D6;       /* 부드러운 테두리 */
-  --text-color: #3B2F2F;      /* 진한 브라운 텍스트 */
+  --primary-color: #6d5c4f;   /* 메인 모카 브라운 */
+  --primary-dark: #5d4e43;    /* 어두운 버전 */
+  --accent-color: #cbbfb3;    /* 밝은 베이지 */
+  --light-bg: #e3dad0;        /* 따뜻한 베이지 배경 */
+  --card-bg: #f5f0ea;         /* 카드 배경 */
+  --soft-gray: #d4c4b8;       /* 부드러운 테두리 */
+  --text-color: #3d302a;      /* 다크 초콜릿 텍스트 */
 
   /* 🌈 감정별 색상 */
   --emotion-positive: #4CAF50;
@@ -30,16 +31,31 @@ body {
 
 /* ✅ 헤더 영역 */
 .header-gradient {
-  background: linear-gradient(135deg, #8B6B4E, #6E523A);
-  color: #fff;
+  background: linear-gradient(135deg, #6d5c4f, #5d4e43);
+  color: #faf8f5;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
   border-bottom: 3px solid var(--accent-color);
 }
 
 /* ✅ 네비게이션 바 */
 .navbar {
-  background-color: #A47C5B !important;
+  background-color: #5d4e43 !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.navbar-brand {
+  color: #faf8f5 !important;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.navbar-nav .nav-link {
+  color: #faf8f5 !important;
+  transition: color 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+  color: var(--accent-color) !important;
 }
 
 .navbar-nav .nav-link.active {
@@ -54,6 +70,12 @@ body {
   border-color: var(--primary-color);
   font-weight: 600;
   transition: all 0.25s ease;
+  color: #faf8f5;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
 }
 
 /* 💫 클릭 시 살짝 눌리는 버튼 효과 */
@@ -65,10 +87,17 @@ body {
 /* ✅ 폼 */
 .form-control:focus {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 0.25rem rgba(139, 107, 78, 0.25);
+  box-shadow: 0 0 0 0.25rem rgba(109, 92, 79, 0.25);
 }
 
 /* ✅ 카드형 레이아웃 + 페이드인 애니메이션 */
+.card {
+  background-color: var(--card-bg);
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
 .card-custom {
   border: none;
   border-radius: 12px;
@@ -125,4 +154,23 @@ body {
 
 .spinner-gold .spinner-border {
   border-color: var(--primary-color) transparent var(--primary-color) transparent;
+}
+
+/* ✅ Footer */
+footer {
+  background-color: var(--primary-dark);
+  color: #faf8f5;
+  text-align: center;
+  padding: 15px 0;
+  margin-top: auto;
+  font-size: 0.9rem;
+}
+
+/* 브라운 계열 유틸리티 클래스 */
+.bg-brown { 
+  background-color: var(--primary-color) !important; 
+}
+
+.text-brown { 
+  color: var(--primary-color) !important; 
 }
