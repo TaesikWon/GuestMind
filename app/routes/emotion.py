@@ -8,7 +8,7 @@ from app.database import get_db
 from app.services.emotion_service import analyze_emotion
 from app.models.user import User
 from app.core.auth_utils import get_current_user_optional
-from app.services.rag_service import LangChainRAGService   # ✅ 수정됨
+from app.services.rag_service import RAGService   # ✅ 수정
 from app.models.emotion_log import EmotionLog
 
 logger = logging.getLogger(__name__)
@@ -16,8 +16,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/emotion", tags=["Emotion Analysis"])
 templates = Jinja2Templates(directory="app/templates")
 
-rag_service = LangChainRAGService()   # ✅ 수정됨
-
+rag_service = RAGService()   # ✅ 수정
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -37,7 +36,7 @@ def handle_emotion_analysis(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user_optional)
 ):
-    """감정 분석 (회원 전용 + DB + LangChain RAG 트랜잭션)"""
+    """감정 분석 (회원 전용 + DB + RAG 트랜잭션)"""
 
     # ✅ 로그인 여부 확인
     if not current_user:
@@ -79,17 +78,9 @@ def handle_emotion_analysis(
         log_entry = EmotionLog(user_id=user_id, text=text, emotion=emotion, reason=reason)
         db.add(log_entry)
 
-        # 3️⃣ LangChain RAG 저장
-        success = rag_service.add_document(
-            text=text,
-            metadata={
-                "user_id": user_id,
-                "emotion": emotion,
-                "reason": reason
-            }
-        )
-        if not success:
-            raise RuntimeError("RAG 저장 실패")
+        # 3️⃣ RAG 저장 (수정됨)
+        rag_service.add_feedback_to_rag(user_id=user_id, feedback_text=text)
+        logger.info(f"🟢 RAG 저장 완료 (user_id={user_id})")
 
         # ✅ 커밋
         db.commit()
