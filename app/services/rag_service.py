@@ -8,11 +8,14 @@ logger = logging.getLogger("soulstay.rag_service")
 def load_feedback_csv(csv_path: str):
     """feedback_samples.csv 파일을 읽어서 ChromaDB에 임베딩 추가"""
     try:
-        # 이미 데이터 있으면 중복 로드 방지
-        doc_count = collection.count()
-        if doc_count > 0:
-            logger.info(f"🔁 기존 벡터DB({doc_count}건)가 존재합니다. CSV 로드를 건너뜁니다.")
-            return
+        # 기존 데이터 완전 삭제 (새로 로드하기 위해)
+        try:
+            existing_ids = collection.get()['ids']
+            if existing_ids:
+                collection.delete(ids=existing_ids)
+                logger.info(f"🗑️ 기존 {len(existing_ids)}개 데이터 삭제")
+        except:
+            pass
 
         with open(csv_path, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)

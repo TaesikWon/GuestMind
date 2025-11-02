@@ -1,4 +1,4 @@
-# app/services/chat_api.py
+# app/api/chat_api.py
 import logging
 from app.services.emotion_service import EmotionService
 from app.services.rag_service import RAGService
@@ -27,7 +27,12 @@ class ChatAPI:
         try:
             # 1️⃣ 감정 분석
             emotion_result = self.emotion.analyze(text)
-            emotion = emotion_result.get("emotion", "중립")
+            
+            # ✅ 결과가 dict인지 str인지 확인
+            if isinstance(emotion_result, dict):
+                emotion = emotion_result.get("emotion", "중립")
+            else:
+                emotion = emotion_result  # 문자열인 경우
 
             # 2️⃣ 유사 피드백 검색 (RAG)
             similar_cases = self.rag.search_similar_feedback(text, top_k=3)
