@@ -1,6 +1,10 @@
-# test_rag.py
+# tests/test_rag.py
 import shutil
 import os
+import sys
+
+# 프로젝트 루트를 sys.path에 추가
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 def clear_index():
     """기존 Chroma 인덱스 폴더를 완전히 삭제"""
@@ -12,15 +16,15 @@ def clear_index():
         print("ℹ️ 기존 인덱스가 없습니다. 새로 생성합니다.")
 
 def main():
-    print("🧩 SoulStay RAG 테스트 시작...")
+    print("🧩 SoulStay LangChain RAG 테스트 시작...")
 
     # 0️⃣ 인덱스 초기화
     clear_index()
 
-    # ⚠️ 중요: 인덱스 삭제 후에 import 해야 함!
-    from app.services.rag_service import RAGService
+    # 1️⃣ LangChain RAG 서비스 초기화
+    from app.services.langchain_rag_service import LangChainRAGService
     
-    rag = RAGService()
+    rag = LangChainRAGService()
     
     # 2️⃣ CSV 파일에서 피드백 데이터 로드
     csv_path = "data/feedback_samples.csv"
@@ -36,9 +40,13 @@ def main():
     for i, r in enumerate(results, start=1):
         print(f"{i}. {r['text']} (score={r['score']:.4f})")
 
-    # ✅ 데이터 개수 확인
-    from app.services.rag_service import get_rag_status
-    status = get_rag_status()
+    # 4️⃣ 응답 생성 테스트
+    print(f"\n💬 응답 생성 테스트:")
+    response = rag.generate_response(query, "negative", results)
+    print(f"답변: {response}")
+
+    # 5️⃣ 상태 확인
+    status = rag.get_rag_status()
     print(f"\n📊 총 저장된 피드백: {status['total_documents']}개")
 
     print("\n✅ 테스트 완료!")
