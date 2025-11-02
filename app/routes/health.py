@@ -2,23 +2,19 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database import get_db
 import logging
-import time
-
-logger = logging.getLogger("soulstay.health")
+import datetime
 
 router = APIRouter(prefix="/health", tags=["Health"])
-
+logger = logging.getLogger("soulstay.health")
 
 @router.get("/ping")
 def ping():
     """서버 정상 응답 확인용"""
-    logger.info("✅ HealthCheck: /ping 호출됨")
     return {
         "status": "ok",
-        "message": "Server is running ✅",
-        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+        "message": "Server is running",
+        "timestamp": datetime.datetime.utcnow().isoformat() + "Z"  # ✅ 시간 표시
     }
-
 
 @router.get("/db")
 def check_database(db: Session = Depends(get_db)):
@@ -28,13 +24,13 @@ def check_database(db: Session = Depends(get_db)):
         logger.info("✅ Database connection check succeeded")
         return {
             "status": "ok",
-            "message": "Database connected ✅",
-            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+            "message": "Database connected",
+            "checked_at": datetime.datetime.utcnow().isoformat() + "Z"
         }
     except Exception as e:
         logger.error(f"❌ Database connection failed: {e}")
         return {
             "status": "error",
-            "message": "Database connection failed",
-            "detail": str(e)
+            "message": str(e),
+            "checked_at": datetime.datetime.utcnow().isoformat() + "Z"
         }

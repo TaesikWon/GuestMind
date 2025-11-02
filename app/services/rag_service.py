@@ -1,73 +1,122 @@
-import os
-from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import SentenceTransformerEmbeddings
-from langchain.schema import Document
-from sentence_transformers import SentenceTransformer, util
+import csv
+import logging
+from app.vectorstore import collection, embedding_function
+
+logger = logging.getLogger("soulstay.rag_service")
+
+# ✅ CSV 기반 초기 데이터 로드
+def load_feedback_csv(csv_path: str):
+    """feedback_samples.csv 파일을 읽어서 ChromaDB에 임베딩 추가"""
+    try:
+        # 이미 데이터 있으면 중복 로드 방지
+        doc_count = collection.count()
+        if doc_count > 0:
+            logger.info(f"🔁 기존 벡터DB({doc_count}건)가 존재합니다. CSV 로드를 건너뜁니다.")
+            return
+
+        with open(csv_path, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            texts = [row["text"].strip() for row in reader if row.get("text")]
+
+        if not texts:
+            logger.warning("⚠️ CSV 파일이 비어있거나 'text' 컬럼이 없습니다.")
+            return
+
+        embeddings = embedding_function(texts)
+        ids = [f"fb_{i}" for i in range(len(texts))]
+        collection.add(documents=texts, embeddings=embeddings, ids=ids)
+
+        logger.info(f"✅ {len(texts)}개의 피드백을 RAG 벡터DB에 추가 완료")
+
+    except FileNotFoundError:
+        logger.error(f"❌ CSV 파일을 찾을 수 없습니다: {csv_path}")
+    except Exception as e:
+        logger.exception(f"❌ CSV 로드 중 오류 발생: {e}")
 
 
-class RAGService:
-    """LangChain + Chroma 기반 RAG 검색 서비스 (Re-ranking 포함)"""
+# ✅ 새 피드백 추가 (중복 체크 포함)
+def add_feedback_to_rag(user_id: int, feedback_text: str):
+    """새로운 사용자 피드백을 RAG 벡터DB에 추가"""
+    try:
+        feedback_text = feedback_text.strip()
+        if not feedback_text:
+            logger.warning("⚠️ 빈 피드백은 추가하지 않습니다.")
+            return
 
-    def __init__(self):
-        # ✅ 임베딩 모델 (한국어 SBERT)
-        self.embedding_model = "jhgan/ko-sroberta-multitask"
-        self.embedding = SentenceTransformerEmbeddings(model_name=self.embedding_model)
+        # 중복 피드백 확인
+        existing = collection.query(query_texts=[feedback_text], n_results=1)
+        if existing and existing.get("documents") and existing["documents"][0]:
+            existing_text = existing["documents"][0][0]
+            if existing_text == feedback_text:
+                logger.info("⚠️ 동일한 피드백이 이미 존재합니다. 추가하지 않습니다.")
+                return
 
-        # ✅ SentenceTransformer 로드 (re-ranking용)
-        self.reranker = SentenceTransformer(self.embedding_model)
+        embedding = embedding_function([feedback_text])[0]
+        doc_id = f"fb_user_{user_id}_{collection.count() + 1}"
 
-        # ✅ Chroma DB 설정
-        self.persist_dir = os.path.join("app", "services", "embeddings", "soulstay_index")
-        os.makedirs(self.persist_dir, exist_ok=True)
-
-        self.vector_db = Chroma(
-            collection_name="soulstay_reviews",
-            embedding_function=self.embedding,
-            persist_directory=self.persist_dir
+        collection.add(
+            documents=[feedback_text],
+            embeddings=[embedding],
+            ids=[doc_id],
         )
 
-    def add_documents(self, docs: list):
-        """
-        텍스트 리스트를 받아 Chroma에 추가
-        docs: ["문장1", "문장2", ...]
-        """
-        documents = [Document(page_content=text) for text in docs]
-        self.vector_db.add_documents(documents)
-        self.vector_db.persist()
-        return f"✅ {len(docs)}개 문서가 추가되었습니다."
+        logger.info(f"🆕 새로운 피드백 추가 완료 (user_id={user_id})")
 
-    def search(self, text: str, emotion: str, top_k: int = 3):
-        """
-        text: 사용자가 입력한 문장
-        emotion: 감정 분석 결과 (positive/negative/neutral)
-        top_k: 반환할 결과 개수
-        """
-        try:
-            # 1️⃣ 1차 검색 (벡터 유사도 기반 Top-10)
-            initial_results = self.vector_db.similarity_search(text, k=10)
-            if not initial_results:
-                return [{"text": "유사한 사례가 없습니다.", "emotion": "neutral"}]
-
-            # 2️⃣ Re-ranking (SentenceTransformer cosine similarity)
-            query_emb = self.reranker.encode(text, convert_to_tensor=True)
-            doc_texts = [r.page_content for r in initial_results]
-            doc_embs = self.reranker.encode(doc_texts, convert_to_tensor=True)
-
-            scores = util.cos_sim(query_emb, doc_embs)[0]
-            ranked_indices = scores.argsort(descending=True)
-
-            # 3️⃣ 상위 top_k 결과만 정렬 반환
-            reranked_results = [initial_results[i] for i in ranked_indices[:top_k]]
-
-            # 4️⃣ 감정 태그 부착 (검색 결과 자체에 감정 정보 없음 → 요청 감정 반영)
-            response = [{"text": r.page_content, "emotion": emotion} for r in reranked_results]
-
-            return response
-
-        except Exception as e:
-            print(f"[RAG ERROR] {e}")
-            return [{"text": f"⚠️ 검색 오류: {str(e)}", "emotion": "error"}]
+    except Exception as e:
+        logger.exception(f"❌ 새 피드백 추가 실패: {e}")
 
 
-# ✅ 기존 코드 호환성 유지
-LangChainRAGService = RAGService
+# ✅ 유사 피드백 검색 (RAG Retrieval)
+def search_similar_feedback(query: str, top_k: int = 3, min_score: float = 0.1):
+    """입력 텍스트와 유사한 피드백 검색"""
+    try:
+        if not query.strip():
+            logger.warning("⚠️ 빈 쿼리로 검색 요청됨.")
+            return []
+
+        query_embedding = embedding_function([query])[0]
+        results = collection.query(query_embeddings=[query_embedding], n_results=top_k)
+
+        if not results or "documents" not in results:
+            return []
+
+        matches = [
+            {"text": t, "score": float(s)}
+            for t, s in zip(results["documents"][0], results["distances"][0])
+            if float(s) > min_score
+        ]
+
+        logger.info(f"🔍 유사 피드백 {len(matches)}개 검색 완료")
+        return matches
+
+    except Exception as e:
+        logger.exception(f"❌ 유사 피드백 검색 실패: {e}")
+        return []
+
+
+# ✅ RAG 상태 확인용 함수
+def get_rag_status():
+    """현재 RAG 데이터 상태 반환"""
+    try:
+        count = collection.count()
+        return {"total_documents": count}
+    except Exception as e:
+        logger.exception(f"RAG 상태 확인 실패: {e}")
+        return {"error": str(e)}
+
+
+# ✅ 클래스 인터페이스 (기존 코드 호환용)
+class RAGService:
+    """RAG 관련 기능을 묶은 서비스 클래스"""
+
+    @staticmethod
+    def load_feedback_csv(csv_path: str):
+        return load_feedback_csv(csv_path)
+
+    @staticmethod
+    def add_feedback_to_rag(user_id: int, feedback_text: str):
+        return add_feedback_to_rag(user_id, feedback_text)
+
+    @staticmethod
+    def search_similar_feedback(query: str, top_k: int = 3):
+        return search_similar_feedback(query, top_k)
