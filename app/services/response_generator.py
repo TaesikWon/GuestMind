@@ -24,53 +24,65 @@ except Exception as e:
 
 
 class ResponseGenerator:
-    """응답 생성기 (GPT 후처리 포함)"""
+    """응답 생성기 (GPT 활용)"""
 
     def __init__(self):
         self.client = client
 
     def compose(self, text, emotion, cases):
         """감정 + 유사 사례 기반 응답 생성"""
-        base_text = self._base_response(text, emotion, cases)
-        
-        # GPT로 문체만 다듬기
         if self.client:
             try:
-                refined = self._refine_with_gpt(base_text)
-                return refined
+                return self._generate_with_gpt(text, emotion, cases)
             except Exception as e:
-                logger.warning(f"⚠️ GPT 후처리 실패, 기본 응답 사용: {e}")
+                logger.warning(f"⚠️ GPT 응답 생성 실패, 기본 응답 사용: {e}")
         
-        return base_text
+        return self._base_response(emotion)
 
-    def _base_response(self, text, emotion, cases):
-        """규칙 기반 기본 응답 생성"""
-        # 감정에 따른 기본 톤
-        if emotion == "positive":
-            tone = "소중한 의견 감사드립니다. 고객님께서 만족하셨다니 저희에게 큰 기쁨입니다."
-        elif emotion == "negative":
-            tone = "불편을 드려 정말 죄송합니다. 고객님의 의견을 진지하게 받아들이고 개선하도록 노력하겠습니다."
-        else:
-            tone = "의견 주셔서 감사합니다. 고객님의 피드백은 저희에게 소중한 자산입니다."
+    def _generate_with_gpt(self, text, emotion, cases):
+        """GPT로 유사 사례를 참고하여 맥락 있는 답변 생성"""
         
-        # 유사 사례가 있으면 참고만 (절대 그대로 붙이지 않음)
-        if cases:
-            tone += " 유사한 고객 사례를 참고하여 더 나은 서비스를 제공하도록 하겠습니다."
+        # 유사 사례 컨텍스트 구성
+        context = ""
+        if cases and len(cases) > 0:
+            context = "\n\n참고할 유사한 고객 피드백:\n"
+            for i, case in enumerate(cases[:3], 1):
+                context += f"{i}. {case['text']}\n"
         
-        return tone
+        # 감정에 따른 시스템 프롬프트
+        system_prompt = """당신은 SoulStay 호텔의 친절하고 전문적인 고객 상담 담당자입니다.
+고객의 감정에 공감하며 진정성 있게 답변하세요.
 
-    def _refine_with_gpt(self, text: str):
-        """GPT로 문체만 자연스럽게 다듬기"""
+답변 가이드:
+- 긍정적 피드백: 감사 표현과 함께 앞으로도 최선을 다하겠다는 다짐
+- 부정적 피드백: 진심 어린 사과와 구체적인 개선 의지 표현
+- 중립적 피드백: 의견에 대한 감사와 경청하는 태도
+
+유사한 과거 피드백이 제공되면, 해당 내용을 참고하여 더 구체적이고 맥락 있는 답변을 작성하세요.
+답변은 2-3문장으로 간결하고 따뜻하게 작성해주세요."""
+
+        user_prompt = f"""고객 피드백: "{text}"
+감정 분석 결과: {emotion}
+{context}
+
+위 고객의 피드백에 대해 공감적이고 전문적인 답변을 작성해주세요."""
+
         response = self.client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {
-                    "role": "system",
-                    "content": "당신은 문체 교정 전문가입니다. 주어진 답변의 의미는 그대로 유지하되, 더 자연스럽고 따뜻한 문체로 다듬어주세요. 내용을 추가하거나 변경하지 말고 문체만 개선하세요."
-                },
-                {"role": "user", "content": text},
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
             ],
-            temperature=0.3,  # 낮게 설정 (창의성보다 정확성)
-            max_tokens=150
+            temperature=0.7,
+            max_tokens=200
         )
         return response.choices[0].message.content.strip()
+
+    def _base_response(self, emotion):
+        """GPT 사용 불가 시 기본 응답"""
+        responses = {
+            "positive": "소중한 의견 감사드립니다. 앞으로도 더 나은 서비스로 보답하겠습니다.",
+            "negative": "불편을 드려 정말 죄송합니다. 고객님의 의견을 바탕으로 개선하도록 노력하겠습니다.",
+            "neutral": "의견 주셔서 감사합니다. 서비스 향상에 참고하겠습니다.",
+        }
+        return responses.get(emotion, "피드백 감사드립니다.")
