@@ -91,3 +91,14 @@ Thumbs.db
 data/train.csv
 data/test.csv
 data/pdfs/
+
+# 🗂️ 자동 생성 파일
+data/output/
+*.tmp
+*.bak
+
+# 📑 자동 리포트 결과물
+reports/
+*.html
+*.pdf
+
