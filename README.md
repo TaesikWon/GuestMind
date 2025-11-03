@@ -23,7 +23,7 @@ AI를 통해 고객 피드백의 감정을 자동 분석하고, 유사 사례를
 
 SoulStay는 고객 피드백을 AI로 분석하여 호텔 운영자가 고객 감정을 직관적으로 파악하고 서비스를 개선할 수 있도록 지원하는 플랫폼입니다.
 
-Hugging Face 기반 로컬 감정 분석 모델과 OpenAI GPT를 결합하여 감정을 분류하고, ChromaDB 벡터 스토어에 저장하여 유사 피드백 검색, 트렌드 분석, 감정 통계 시각화를 제공합니다.
+**Hugging Face 기반 한국어 감정 분석 모델**과 **LangChain RAG 시스템**을 결합하여 감정을 분류하고, 유사한 과거 피드백을 참고하여 맥락 있는 답변을 생성합니다. ChromaDB 벡터 스토어를 활용한 의미 기반 검색으로 트렌드 분석과 감정 통계 시각화를 제공합니다.
 
 ---
 
@@ -31,13 +31,14 @@ Hugging Face 기반 로컬 감정 분석 모델과 OpenAI GPT를 결합하여 �
 
 | 기능 | 설명 |
 |------|------|
-| 💬 **감정 분석** | Hugging Face 모델로 긍정/부정/중립 분류 + GPT로 이유 생성 |
-| 🧠 **RAG 검색** | ChromaDB 기반 벡터 스토어 유사 피드백 검색 |
+| 💬 **감정 분석** | Hugging Face BERT 모델로 긍정/부정/중립 자동 분류 |
+| 🤖 **AI 챗봇** | LangChain 기반 RAG로 유사 사례를 참고한 맥락 있는 답변 생성 |
+| 🧠 **벡터 검색** | ChromaDB + OpenAI Embeddings 기반 의미론적 유사 피드백 검색 |
 | 👤 **회원 시스템** | JWT 기반 로그인/회원가입 (쿠키 저장) |
-| 📚 **데이터 저장** | PostgreSQL + SQLAlchemy로 감정 로그 및 사용자 데이터 관리 |
+| 📚 **데이터 관리** | PostgreSQL + SQLAlchemy로 감정 로그 및 사용자 데이터 영구 저장 |
 | 📊 **자동 요약** | APScheduler 기반 일일 감정 통계 자동 생성 |
-| 🎨 **프론트엔드** | Jinja2 + Bootstrap 기반 반응형 UI |
-| 🧾 **로깅 시스템** | Python logging 모듈 기반 로그 기록 |
+| 🎨 **프론트엔드** | Jinja2 + Bootstrap 기반 앤티크 호텔 디자인 UI |
+| 🧾 **로깅 시스템** | Python logging 모듈 기반 상세 로그 기록 |
 
 ---
 
@@ -45,16 +46,51 @@ Hugging Face 기반 로컬 감정 분석 모델과 OpenAI GPT를 결합하여 �
 
 | 분야 | 사용 기술 |
 |------|----------|
-| **Backend** | FastAPI, SQLAlchemy, PostgreSQL |
-| **감정 분석** | Hugging Face (WhitePeak/bert-base-cased-Korean-sentiment) |
-| **문맥 생성** | OpenAI GPT-4o-mini (reason 생성 및 문맥 다듬기) |
-| **RAG / Vector DB** | ChromaDB, LangChain |
-| **Embedding** | Sentence Transformers |
-| **Auth** | JWT (Access + Refresh Token), python-jose |
+| **Backend** | FastAPI, SQLAlchemy, PostgreSQL, Alembic |
+| **감정 분석** | Hugging Face Transformers (WhitePeak/bert-base-cased-Korean-sentiment) |
+| **LLM** | OpenAI GPT-4o-mini |
+| **RAG Framework** | LangChain (LCEL), LangChain-OpenAI, LangChain-Chroma |
+| **Vector DB** | ChromaDB |
+| **Embedding** | OpenAI text-embedding-3-small |
+| **Auth** | JWT (Access + Refresh Token), python-jose, bcrypt |
 | **Scheduler** | APScheduler |
-| **Frontend** | Jinja2, Bootstrap, Custom CSS |
+| **Frontend** | Jinja2, Bootstrap 5, Custom CSS |
 | **Config** | python-dotenv, pydantic-settings |
 | **Logging** | Python logging 모듈 |
+
+---
+
+## 🏗️ 시스템 아키텍처
+```
+┌─────────────┐
+│   사용자     │
+└──────┬──────┘
+       │
+       ▼
+┌─────────────────────────────────────┐
+│          FastAPI Server             │
+│  ┌──────────────────────────────┐  │
+│  │      Chat API                │  │
+│  └────┬──────────────┬──────────┘  │
+│       │              │              │
+│       ▼              ▼              │
+│  ┌─────────┐   ┌──────────────┐   │
+│  │ Emotion │   │ LangChain    │   │
+│  │ Service │   │ RAG Service  │   │
+│  │ (BERT)  │   └──────┬───────┘   │
+│  └─────────┘          │            │
+│                       ▼            │
+│              ┌─────────────────┐  │
+│              │   ChromaDB      │  │
+│              │  (Vector Store) │  │
+│              └─────────────────┘  │
+│                                    │
+│              ┌─────────────────┐  │
+│              │   PostgreSQL    │  │
+│              │   (User Data)   │  │
+│              └─────────────────┘  │
+└────────────────────────────────────┘
+```
 
 ---
 
@@ -74,13 +110,22 @@ pip install -r requirements.txt
 
 프로젝트 루트에 `.env` 파일 생성:
 ```env
+# OpenAI API
 OPENAI_API_KEY=sk-your-api-key
+
+# Database
 DATABASE_URL=postgresql+psycopg2://postgres:yourpassword@localhost/soulstay
-CHROMA_DB_PATH=./chroma_data
-SECRET_KEY=your-secret-key
+
+# Vector Store
+CHROMA_DB_PATH=./app/services/embeddings
+
+# JWT
+SECRET_KEY=your-secret-key-here
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
 REFRESH_TOKEN_EXPIRE_DAYS=7
+
+# Environment
 ENVIRONMENT=development
 ```
 
@@ -89,12 +134,20 @@ ENVIRONMENT=development
 # PostgreSQL 데이터베이스 생성
 createdb soulstay
 
-# 테이블 자동 생성 (첫 실행 시)
-uvicorn main:app --reload
+# 서버 첫 실행 시 테이블 자동 생성
+python main.py
 ```
 
-### 4️⃣ 서버 실행
+### 4️⃣ RAG 벡터 스토어 초기화
 ```bash
+# 피드백 샘플 데이터를 ChromaDB에 로드
+python tests/test_rag.py
+```
+
+### 5️⃣ 서버 실행
+```bash
+python main.py
+# 또는
 uvicorn main:app --reload
 ```
 
@@ -106,17 +159,20 @@ uvicorn main:app --reload
 ```
 SoulStay/
 ├── app/
+│   ├── api/
+│   │   └── chat_api.py          # 챗봇 통합 API
 │   ├── routes/
-│   │   ├── auth.py          # 회원가입/로그인/로그아웃
-│   │   ├── emotion.py       # 감정 분석 API
-│   │   ├── rag.py           # RAG 검색
-│   │   └── user.py          # 사용자 정보
+│   │   ├── auth.py              # 회원가입/로그인/로그아웃
+│   │   ├── chat.py              # 채팅 UI 및 API
+│   │   ├── emotion.py           # 감정 분석 API
+│   │   ├── rag.py               # RAG 검색
+│   │   └── user.py              # 사용자 정보
 │   ├── services/
-│   │   ├── emotion_service.py
-│   │   ├── rag_service.py
-│   │   ├── summary_service.py
-│   │   ├── user_service.py
-│   │   └── token_service.py
+│   │   ├── emotion_service.py   # Hugging Face 감정 분석
+│   │   ├── langchain_rag_service.py  # LangChain RAG 시스템
+│   │   ├── summary_service.py   # 일일 요약
+│   │   ├── user_service.py      # 사용자 관리
+│   │   └── token_service.py     # JWT 토큰
 │   ├── models/
 │   │   ├── user.py
 │   │   ├── emotion_log.py
@@ -125,15 +181,21 @@ SoulStay/
 │   │   └── auth_utils.py
 │   ├── templates/
 │   │   ├── base.html
+│   │   ├── chat.html            # 챗봇 UI
 │   │   ├── emotion.html
 │   │   ├── login.html
 │   │   └── register.html
 │   ├── static/
-│   │   └── style.css
+│   │   └── style.css            # 앤티크 호텔 디자인
 │   ├── config.py
 │   ├── database.py
 │   └── vectorstore.py
+├── data/
+│   └── feedback_samples.csv     # 50개 샘플 피드백
+├── tests/
+│   └── test_rag.py              # RAG 시스템 테스트
 ├── main.py
+├── train_emotion_model.py       # 감정 분석 모델 학습 스크립트
 ├── .env
 ├── requirements.txt
 ├── Dockerfile
@@ -178,31 +240,31 @@ SoulStay/
 
 ---
 
+## 🤖 AI 시스템 상세
+
+### 감정 분석 (Emotion Analysis)
+- **모델**: `WhitePeak/bert-base-cased-Korean-sentiment`
+- **출력**: positive / negative / neutral
+- **처리**: Hugging Face Transformers pipeline
+
+### RAG 시스템 (Retrieval-Augmented Generation)
+- **Framework**: LangChain (LCEL 방식)
+- **Vector Store**: ChromaDB
+- **Embedding**: OpenAI text-embedding-3-small (1536 차원)
+- **LLM**: OpenAI GPT-4o-mini
+- **프로세스**:
+  1. 사용자 입력 → 감정 분석
+  2. 벡터 검색 → 유사 피드백 3개 추출
+  3. 프롬프트 템플릿 → 맥락 제공
+  4. LLM → 개인화된 답변 생성
+
+---
+
 ## 🧾 로그 확인
 
 로그 파일은 `logs/` 디렉터리에 자동 생성됩니다.
 
 FastAPI 라우트 호출 시 분석 결과와 DB 저장 상태가 기록됩니다.
-
----
-
-## 🧭 개발 로드맵
-
-### ✅ 현재 단계
-- [x] JWT 기반 인증 시스템
-- [x] Hugging Face 로컬 모델 감정 분석
-- [x] RAG + 벡터 검색 통합
-- [x] PostgreSQL 영구 저장
-- [x] APScheduler 자동 요약
-- [x] UI 기본 구조
-
-### 🔜 다음 단계
-- [ ] 감정 히스토리 페이지
-- [ ] RAG 검색 품질 향상
-- [ ] Dashboard 시각화 (감정 통계 차트)
-- [ ] Hugging Face 모델 fine-tuning
-- [ ] AWS 배포 (EC2 + RDS + S3)
-- [ ] Docker 컨테이너 최적화
 
 ---
 
@@ -219,3 +281,12 @@ FastAPI 라우트 호출 시 분석 결과와 DB 저장 상태가 기록됩니�
 ## 📜 라이선스
 
 본 프로젝트는 학습 및 연구 목적의 오픈소스 예시이며, 무단 상업적 이용 및 재배포를 금합니다.
+
+---
+
+## 🙏 Acknowledgments
+
+- **Hugging Face**: 한국어 감정 분석 모델 제공
+- **LangChain**: RAG 프레임워크
+- **OpenAI**: GPT-4o-mini & Embeddings API
+- **ChromaDB**: 벡터 데이터베이스
