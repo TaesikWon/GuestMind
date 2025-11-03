@@ -1,7 +1,9 @@
 # app/tests/insert_test_data.py
+import os, sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+
 from app.database import SessionLocal
-from app.models.emotion_log import EmotionLog
-from app.models.user import User
+from app.models import User, EmotionLog
 
 def insert_test_data():
     db = SessionLocal()
@@ -23,13 +25,7 @@ def insert_test_data():
         ]
 
         for text, emotion, reason in samples:
-            log = EmotionLog(
-                user_id=user.id,
-                text=text,
-                emotion=emotion,
-                reason=reason
-            )
-            db.add(log)
+            db.add(EmotionLog(user_id=user.id, text=text, emotion=emotion, reason=reason))
 
         db.commit()
         print("✅ 테스트 데이터 삽입 완료")
@@ -37,18 +33,8 @@ def insert_test_data():
     except Exception as e:
         db.rollback()
         print(f"❌ 오류 발생: {e}")
-
     finally:
         db.close()
 
 if __name__ == "__main__":
     insert_test_data()
-
-# app/tests/insert_test_data.py
-import sys, os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-
-from app import models  # ✅ 모든 모델 로드
-from app.database import SessionLocal
-from app.models.emotion_log import EmotionLog
-from app.models.user import User
